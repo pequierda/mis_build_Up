@@ -21,8 +21,9 @@ try {
         $username = $input['username'] ?? '';
         $password = $input['password'] ?? '';
 
-        $adminUsername = $_ENV['ADMIN_USERNAME'] ?? getenv('ADMIN_USERNAME') ?? 'admin';
-        $adminPassword = $_ENV['ADMIN_PASSWORD'] ?? getenv('ADMIN_PASSWORD') ?? 'admin123';
+        // Get admin credentials from Upstash Redis
+        $adminUsername = $redis->get('admin:username') ?: 'admin';
+        $adminPassword = $redis->get('admin:password') ?: 'admin123';
 
         if ($username === $adminUsername && $password === $adminPassword) {
             $_SESSION['admin_logged_in'] = true;
