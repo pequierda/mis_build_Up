@@ -18,11 +18,7 @@ git push -u origin main
 1. Go to [vercel.com](https://vercel.com) and sign in
 2. Click "Import Project"
 3. Select your GitHub repository
-4. Configure your project:
-   - **Framework Preset**: Other
-   - **Root Directory**: ./
-   - **Build Command**: (leave empty)
-   - **Output Directory**: (leave empty)
+4. Vercel will auto-detect your project settings
 
 ### 3. Add Environment Variables
 

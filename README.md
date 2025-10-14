@@ -98,7 +98,6 @@ MIS_buildUp/
 │   └── admin/
 │       ├── auth.php           # Admin authentication
 │       └── services.php       # Service CRUD operations
-├── vercel.json                # Vercel configuration
 ├── .htaccess                  # Apache config (local development)
 ├── .env.example               # Environment variables template
 └── README.md                  # This file
