@@ -1,0 +1,30 @@
+# Upstash CLI Commands for Admin Setup
+# Copy and paste these commands one by one in your Upstash CLI
+
+# IMPORTANT: Make sure you set the VALUES, not the key names!
+
+# 1. Set admin username (the VALUE should be "admin")
+SET admin:username "admin"
+
+# 2. Set admin password (the VALUE should be "admin123")
+SET admin:password "admin123"
+
+# 3. Verify the credentials were set correctly
+# These should return "admin" and "admin123", NOT "admin:username" and "admin:password"
+GET admin:username
+GET admin:password
+
+# 4. Test the connection
+GET test:connection
+
+# 5. Check if services list exists (should be empty initially)
+GET services_list
+
+# 6. List all keys to verify everything is set up
+KEYS *
+
+# TROUBLESHOOTING:
+# If GET admin:username returns "admin:username" instead of "admin",
+# you set the key name as the value. Run these commands again:
+# SET admin:username "admin"
+# SET admin:password "admin123"

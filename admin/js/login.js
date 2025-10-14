@@ -14,7 +14,18 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             body: JSON.stringify({ username, password })
         });
         
-        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const responseText = await response.text();
+        console.log('Response text:', responseText); // Debug log
+        
+        if (!responseText.trim()) {
+            throw new Error('Empty response from server');
+        }
+        
+        const result = JSON.parse(responseText);
         
         if (result.success) {
             window.location.href = 'dashboard.html';
@@ -24,7 +35,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         }
     } catch (error) {
         console.error('Login error:', error);
-        errorMessage.textContent = 'Login failed. Please try again.';
+        errorMessage.textContent = `Login failed: ${error.message}. Please check your credentials and try again.`;
         errorMessage.classList.remove('hidden');
     }
 });
