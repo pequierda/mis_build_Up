@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Test - TechSolutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Upstash Connection Test</h1>
+        
+        <div id="testResults" class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <span class="font-medium">Testing connection...</span>
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <button id="testBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium">
+                Run Test Again
+            </button>
+            <a href="admin/login.html" class="ml-4 bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium">
+                Go to Admin Login
+            </a>
+        </div>
+    </div>
+
+    <script>
+        async function runTest() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg"><span class="font-medium">Testing connection...</span><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div></div>';
+
+            try {
+                // Test 1: Basic API endpoint
+                const testResponse = await fetch('api/test.php');
+                const testData = await testResponse.text();
+                
+                let testResult = '';
+                try {
+                    const parsed = JSON.parse(testData);
+                    testResult = `
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <h3 class="font-semibold text-green-800">✅ API Test Passed</h3>
+                            <pre class="text-sm text-green-700 mt-2 overflow-auto">${JSON.stringify(parsed, null, 2)}</pre>
+                        </div>
+                    `;
+                } catch (e) {
+                    testResult = `
+                        <div class="p-4 bg-red-50 rounded-lg">
+                            <h3 class="font-semibold text-red-800">❌ API Test Failed</h3>
+                            <p class="text-sm text-red-700">Response: ${testData}</p>
+                        </div>
+                    `;
+                }
+
+                // Test 2: Admin auth endpoint
+                const authResponse = await fetch('api/admin/auth.php?action=check');
+                const authData = await authResponse.text();
+                
+                let authResult = '';
+                try {
+                    const parsed = JSON.parse(authData);
+                    authResult = `
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <h3 class="font-semibold text-green-800">✅ Auth Test Passed</h3>
+                            <pre class="text-sm text-green-700 mt-2 overflow-auto">${JSON.stringify(parsed, null, 2)}</pre>
+                        </div>
+                    `;
+                } catch (e) {
+                    authResult = `
+                        <div class="p-4 bg-red-50 rounded-lg">
+                            <h3 class="font-semibold text-red-800">❌ Auth Test Failed</h3>
+                            <p class="text-sm text-red-700">Response: ${authData}</p>
+                        </div>
+                    `;
+                }
+
+                // Test 3: Services endpoint
+                const servicesResponse = await fetch('api/admin/services.php');
+                const servicesData = await servicesResponse.text();
+                
+                let servicesResult = '';
+                try {
+                    const parsed = JSON.parse(servicesData);
+                    servicesResult = `
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <h3 class="font-semibold text-green-800">✅ Services Test Passed</h3>
+                            <pre class="text-sm text-green-700 mt-2 overflow-auto">${JSON.stringify(parsed, null, 2)}</pre>
+                        </div>
+                    `;
+                } catch (e) {
+                    servicesResult = `
+                        <div class="p-4 bg-red-50 rounded-lg">
+                            <h3 class="font-semibold text-red-800">❌ Services Test Failed</h3>
+                            <p class="text-sm text-red-700">Response: ${servicesData}</p>
+                        </div>
+                    `;
+                }
+
+                resultsDiv.innerHTML = testResult + authResult + servicesResult;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="p-4 bg-red-50 rounded-lg">
+                        <h3 class="font-semibold text-red-800">❌ Connection Error</h3>
+                        <p class="text-sm text-red-700">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        document.getElementById('testBtn').addEventListener('click', runTest);
+        
+        // Run test on page load
+        runTest();
+    </script>
+</body>
+</html>

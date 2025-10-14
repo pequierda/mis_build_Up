@@ -1,28 +1,27 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+// Simple test without JSON headers first
+echo "PHP is working!<br>";
 
 try {
     require_once __DIR__ . '/../config/upstash.php';
+    echo "Upstash config loaded!<br>";
+    
     $redis = new UpstashRedis();
+    echo "Upstash client created!<br>";
     
     // Test basic connectivity
     $testKey = 'test:connection';
     $redis->set($testKey, 'working');
     $result = $redis->get($testKey);
+    echo "Test key set and retrieved: " . $result . "<br>";
     
-    echo json_encode([
-        'success' => true,
-        'message' => 'Connection successful',
-        'test_result' => $result,
-        'admin_username' => $redis->get('admin:username'),
-        'admin_password' => $redis->get('admin:password')
-    ]);
+    $adminUser = $redis->get('admin:username');
+    $adminPass = $redis->get('admin:password');
+    echo "Admin username: " . ($adminUser ?: 'NOT SET') . "<br>";
+    echo "Admin password: " . ($adminPass ?: 'NOT SET') . "<br>";
+    
+    echo "<br><strong>All tests passed!</strong>";
     
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Connection failed: ' . $e->getMessage()
-    ]);
+    echo "<br><strong>Error:</strong> " . $e->getMessage();
 }
