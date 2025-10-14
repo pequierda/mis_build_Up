@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - TechSolutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="ml-3 text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">Admin Dashboard</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="../index.html" target="_blank" class="text-gray-700 hover:text-purple-600 font-medium transition">View Site</a>
+                    <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Manage Services</h1>
+            <button id="addServiceBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Add New Service
+            </button>
+        </div>
+
+        <div id="servicesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Services will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Add/Edit Service Modal -->
+    <div id="serviceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">Add New Service</h2>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="serviceForm" class="p-6 space-y-6">
+                <input type="hidden" id="serviceId" name="id">
+
+                <div>
+                    <label for="serviceTitle" class="block text-sm font-medium text-gray-700 mb-2">Service Title</label>
+                    <input type="text" id="serviceTitle" name="title" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="e.g., Cloud Solutions">
+                </div>
+
+                <div>
+                    <label for="serviceDescription" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="serviceDescription" name="description" rows="3" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Brief description of the service"></textarea>
+                </div>
+
+                <div>
+                    <label for="serviceColor" class="block text-sm font-medium text-gray-700 mb-2">Icon Color</label>
+                    <select id="serviceColor" name="color" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <option value="text-blue-600">Blue</option>
+                        <option value="text-red-600">Red</option>
+                        <option value="text-green-600">Green</option>
+                        <option value="text-purple-600">Purple</option>
+                        <option value="text-yellow-600">Yellow</option>
+                        <option value="text-indigo-600">Indigo</option>
+                        <option value="text-pink-600">Pink</option>
+                        <option value="text-orange-600">Orange</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="serviceIcon" class="block text-sm font-medium text-gray-700 mb-2">Icon SVG Path</label>
+                    <textarea id="serviceIcon" name="icon" rows="2" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"
+                        placeholder="SVG path (d attribute)"></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Get SVG paths from <a href="https://heroicons.com" target="_blank" class="text-purple-600 hover:underline">Heroicons</a></p>
+                </div>
+
+                <div>
+                    <label for="serviceImage" class="block text-sm font-medium text-gray-700 mb-2">Service Image URL</label>
+                    <input type="url" id="serviceImage" name="image"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="https://example.com/image.jpg (optional)">
+                    <p class="text-xs text-gray-500 mt-1">Or upload image below</p>
+                </div>
+
+                <div>
+                    <label for="imageUpload" class="block text-sm font-medium text-gray-700 mb-2">Upload Image</label>
+                    <input type="file" id="imageUpload" accept="image/*"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-1">Max size: 500KB (will be converted to base64)</p>
+                </div>
+
+                <div id="imagePreview" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Image Preview</label>
+                    <img id="previewImg" class="w-full h-48 object-cover rounded-lg border">
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg transition">
+                        Save Service
+                    </button>
+                    <button type="button" id="cancelBtn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-lg transition">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
+

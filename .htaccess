@@ -1,0 +1,28 @@
+RewriteEngine On
+
+# Set environment variables
+SetEnv UPSTASH_REDIS_REST_URL "your_upstash_redis_rest_url"
+SetEnv UPSTASH_REDIS_REST_TOKEN "your_upstash_redis_rest_token"
+SetEnv ADMIN_USERNAME "admin"
+SetEnv ADMIN_PASSWORD "admin123"
+
+# Enable mod_rewrite for clean URLs
+RewriteBase /
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Prevent directory browsing
+Options -Indexes
+
+# Enable CORS for API
+<FilesMatch "\.(php)$">
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type"
+</FilesMatch>
+
