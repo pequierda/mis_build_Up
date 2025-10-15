@@ -48,21 +48,63 @@ function createServiceCard(service, rating) {
     `;
 }
 
-function bookService(serviceId, serviceTitle) {
-    // Create booking modal or redirect to contact
-    const message = `I'm interested in booking: ${serviceTitle}`;
+async function bookService(serviceId, serviceTitle) {
+    // Update modal content
+    document.getElementById('bookServiceTitle').textContent = `Book ${serviceTitle}`;
+    document.getElementById('bookServiceDescription').textContent = `Ready to get started? Contact us to book this amazing service!`;
     
-    // Show notification
-    showNotification(`Redirecting to contact for: ${serviceTitle}`, 'success');
+    // Show modal
+    document.getElementById('bookServiceModal').classList.remove('hidden');
     
-    // Scroll to contact section after a short delay
-    setTimeout(() => {
-        scrollToContact();
-    }, 1500);
+    // Load contact information
+    await loadContactInfoForBooking();
     
-    // You can also add more booking functionality here
-    // For example, pre-fill a contact form with the service name
     console.log('Booking requested for:', serviceTitle, serviceId);
+}
+
+async function loadContactInfoForBooking() {
+    try {
+        const response = await fetch('api/contact');
+        const contacts = await response.json();
+        
+        // Find phone and email contacts
+        const phoneContact = contacts.find(c => c.type === 'phone' && c.isActive !== false);
+        const emailContact = contacts.find(c => c.type === 'email' && c.isActive !== false);
+        
+        // Update call button
+        const callNowBtn = document.getElementById('callNowBtn');
+        const callNowText = document.getElementById('callNowText');
+        if (phoneContact) {
+            callNowText.textContent = `Call Now: ${phoneContact.value}`;
+            callNowBtn.onclick = () => window.open(`tel:${phoneContact.value}`, '_self');
+        } else {
+            callNowText.textContent = 'Call Now: Not Available';
+            callNowBtn.disabled = true;
+            callNowBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        
+        // Update email button
+        const emailUsBtn = document.getElementById('emailUsBtn');
+        const emailUsText = document.getElementById('emailUsText');
+        if (emailContact) {
+            emailUsText.textContent = `Email Us: ${emailContact.value}`;
+            emailUsBtn.onclick = () => window.open(`mailto:${emailContact.value}`, '_self');
+        } else {
+            emailUsText.textContent = 'Email Us: Not Available';
+            emailUsBtn.disabled = true;
+            emailUsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        
+    } catch (error) {
+        console.error('Error loading contact info for booking:', error);
+        // Set default values if loading fails
+        document.getElementById('callNowText').textContent = 'Call Now: Contact Not Available';
+        document.getElementById('emailUsText').textContent = 'Email Us: Contact Not Available';
+    }
+}
+
+function closeBookServiceModal() {
+    document.getElementById('bookServiceModal').classList.add('hidden');
 }
 
 function showNotification(message, type) {
@@ -620,6 +662,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (submitQuoteBtn) {
         submitQuoteBtn.addEventListener('click', submitQuote);
+    }
+    
+    // Book service modal event listeners
+    const closeBookModalBtn = document.getElementById('closeBookModal');
+    if (closeBookModalBtn) {
+        closeBookModalBtn.addEventListener('click', closeBookServiceModal);
     }
 });
 
