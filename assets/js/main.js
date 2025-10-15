@@ -323,6 +323,87 @@ function resizeGalleryImage(img, index) {
 
 // Navigation event listeners removed - now using grid layout
 
+// Contact Functionality
+let contactInfo = [];
+
+async function loadContactInfo() {
+    try {
+        const response = await fetch('api/contact');
+        contactInfo = await response.json();
+        renderContactInfo();
+    } catch (error) {
+        console.error('Error loading contact info:', error);
+        document.getElementById('contactGrid').innerHTML = '<div class="col-span-full text-center text-red-500 py-12"><p>Unable to load contact information. Please try again later.</p></div>';
+    }
+}
+
+function renderContactInfo() {
+    const container = document.getElementById('contactGrid');
+    
+    // Show loading message
+    container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div><p>Please wait, fetching contact information...</p></div>';
+    
+    if (!contactInfo || contactInfo.length === 0) {
+        container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-12">Contact information coming soon. Please check back later!</p>';
+        return;
+    }
+    
+    // Filter only active contacts and sort by order
+    const activeContacts = contactInfo
+        .filter(contact => contact.isActive !== false)
+        .sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    if (activeContacts.length === 0) {
+        container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-12">Contact information coming soon. Please check back later!</p>';
+        return;
+    }
+    
+    container.innerHTML = activeContacts.map(contact => createContactCard(contact)).join('');
+}
+
+function createContactCard(contact) {
+    const iconMap = {
+        'phone': '📞',
+        'email': '📧',
+        'address': '📍',
+        'website': '🌐',
+        'facebook': '📘',
+        'instagram': '📷',
+        'linkedin': '💼',
+        'twitter': '🐦'
+    };
+    
+    const displayIcon = iconMap[contact.icon] || '📋';
+    
+    // Create appropriate link based on contact type
+    let contactLink = '';
+    if (contact.type === 'phone') {
+        contactLink = `tel:${contact.value}`;
+    } else if (contact.type === 'email') {
+        contactLink = `mailto:${contact.value}`;
+    } else if (contact.type === 'website') {
+        contactLink = contact.value.startsWith('http') ? contact.value : `https://${contact.value}`;
+    } else if (contact.type === 'social') {
+        contactLink = contact.value.startsWith('http') ? contact.value : `https://${contact.value}`;
+    }
+    
+    return `
+        <div class="contact-card bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 text-center">
+            <div class="text-4xl mb-4">${displayIcon}</div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">${contact.label}</h3>
+            ${contactLink ? `
+                <a href="${contactLink}" 
+                   class="text-blue-600 hover:text-blue-800 transition-colors"
+                   ${contact.type === 'phone' || contact.type === 'email' ? '' : 'target="_blank" rel="noopener noreferrer"'}>
+                    ${contact.value}
+                </a>
+            ` : `
+                <p class="text-gray-600">${contact.value}</p>
+            `}
+        </div>
+    `;
+}
+
 // Product Quote Functionality
 let allProducts = [];
 let selectedProducts = [];
@@ -553,6 +634,7 @@ function submitQuote() {
 document.addEventListener('DOMContentLoaded', () => {
     loadServices();
     loadClients();
+    loadContactInfo();
     loadProducts();
     
     // Quote modal event listeners
