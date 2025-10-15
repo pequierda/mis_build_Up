@@ -145,17 +145,38 @@ function renderClientsGrid() {
     const grid = document.getElementById('clientsGrid');
     
     grid.innerHTML = clients.map(client => `
-        <div class="client-card bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow">
+        <div class="client-card bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="expandClient(this)">
             <div class="text-center">
                 <div class="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden shadow-lg">
                     <img src="${client.image}" alt="${client.name}" class="w-full h-full object-cover">
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 mb-1">${client.name}</h3>
                 ${client.company ? `<p class="text-blue-600 font-semibold text-sm mb-2">${client.company}</p>` : ''}
-                ${client.testimonial ? `<p class="text-gray-600 text-sm italic">"${client.testimonial}"</p>` : ''}
+                ${client.testimonial ? `<p class="text-gray-600 text-sm italic client-testimonial">"${client.testimonial}"</p>` : ''}
             </div>
         </div>
     `).join('');
+}
+
+function expandClient(card) {
+    // Toggle expanded class
+    card.classList.toggle('expanded');
+    
+    // If expanding, show full testimonial
+    if (card.classList.contains('expanded')) {
+        const testimonial = card.querySelector('.client-testimonial');
+        if (testimonial) {
+            testimonial.style.display = 'block';
+            testimonial.style.maxHeight = 'none';
+        }
+    } else {
+        // If collapsing, truncate testimonial
+        const testimonial = card.querySelector('.client-testimonial');
+        if (testimonial) {
+            testimonial.style.maxHeight = '3rem';
+            testimonial.style.overflow = 'hidden';
+        }
+    }
 }
 
 // Carousel functions removed - now using grid layout

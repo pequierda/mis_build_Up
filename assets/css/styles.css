@@ -69,36 +69,32 @@ html {
     scroll-behavior: smooth;
 }
 
-/* Client Carousel Styles */
-#clientsCarousel {
-    min-height: 400px;
+/* Client Grid Styles */
+.client-card {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.client-slide {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.client-card:hover {
+    transform: translateY(-4px);
 }
 
-.client-slide img {
-    transition: transform 0.3s ease;
-}
-
-.client-slide:hover img {
+.client-card.expanded {
     transform: scale(1.05);
+    z-index: 10;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
-.dot {
-    cursor: pointer;
+.client-testimonial {
+    max-height: 3rem;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
 }
 
-.dot:hover {
-    background-color: #3b82f6;
-}
-
-/* Smooth carousel transitions */
-#clientsCarousel {
-    transition: transform 0.5s ease-in-out;
+.client-card.expanded .client-testimonial {
+    max-height: none;
+    overflow: visible;
 }
 
 /* Mobile Menu Toggle (if needed later) */
