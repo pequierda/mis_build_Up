@@ -288,8 +288,193 @@ function resizeGalleryImage(img, index) {
 
 // Navigation event listeners removed - now using grid layout
 
+// Product Quote Functionality
+let allProducts = [];
+let selectedProducts = [];
+
+async function loadProducts() {
+    try {
+        const response = await fetch('api/products');
+        allProducts = await response.json();
+    } catch (error) {
+        console.error('Error loading products:', error);
+        allProducts = [];
+    }
+}
+
+function openQuoteModal() {
+    const modal = document.getElementById('quoteModal');
+    modal.classList.remove('hidden');
+    renderProductsList();
+}
+
+function closeQuoteModal() {
+    const modal = document.getElementById('quoteModal');
+    modal.classList.add('hidden');
+    selectedProducts = [];
+}
+
+function renderProductsList() {
+    const container = document.getElementById('productsQuoteList');
+    
+    if (!allProducts || allProducts.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-500 py-8">No products available at the moment.</p>';
+        return;
+    }
+    
+    // Group products by category
+    const groupedProducts = allProducts.reduce((acc, product) => {
+        const category = product.category || 'Other';
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(product);
+        return acc;
+    }, {});
+    
+    container.innerHTML = Object.entries(groupedProducts).map(([category, products]) => `
+        <div class="mb-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                </svg>
+                ${category}
+            </h3>
+            <div class="space-y-3 pl-2">
+                ${products.map(product => createProductQuoteItem(product)).join('')}
+            </div>
+        </div>
+    `).join('');
+    
+    // Add event listeners
+    setTimeout(() => {
+        document.querySelectorAll('.product-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                updateSelectedProducts(e.target.dataset.productId, e.target.checked);
+            });
+        });
+    }, 100);
+}
+
+function createProductQuoteItem(product) {
+    const isInStock = product.inStock !== false;
+    const stockClass = isInStock ? '' : 'opacity-50';
+    const stockBadge = !isInStock ? '<span class="text-xs text-red-600 font-semibold ml-2">(Out of Stock)</span>' : '';
+    
+    return `
+        <label class="flex items-start gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition ${stockClass}">
+            <input type="checkbox" 
+                class="product-checkbox mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+                data-product-id="${product.id}"
+                ${!isInStock ? 'disabled' : ''}>
+            
+            ${product.imageUrl ? `
+                <div class="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden shadow">
+                    <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
+                </div>
+            ` : ''}
+            
+            <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-2">
+                    <h4 class="font-semibold text-gray-900">${product.name}${stockBadge}</h4>
+                    <span class="text-lg font-bold text-blue-600 whitespace-nowrap">${product.price}</span>
+                </div>
+                ${product.description ? `<p class="text-sm text-gray-600 mt-1">${product.description}</p>` : ''}
+            </div>
+        </label>
+    `;
+}
+
+function updateSelectedProducts(productId, isSelected) {
+    const product = allProducts.find(p => p.id === productId);
+    
+    if (isSelected && product) {
+        selectedProducts.push(product);
+    } else {
+        selectedProducts = selectedProducts.filter(p => p.id !== productId);
+    }
+    
+    updateTotalPrice();
+}
+
+function updateTotalPrice() {
+    const totalElement = document.getElementById('totalPrice');
+    
+    if (selectedProducts.length === 0) {
+        totalElement.textContent = '$0.00';
+        return;
+    }
+    
+    // Try to calculate total if all prices are in the same format
+    const prices = selectedProducts.map(p => {
+        const priceStr = p.price.toString().replace(/[^0-9.,]/g, '');
+        return parseFloat(priceStr.replace(/,/g, ''));
+    });
+    
+    // Check if all prices are valid numbers
+    const allValidPrices = prices.every(p => !isNaN(p));
+    
+    if (allValidPrices) {
+        const total = prices.reduce((sum, price) => sum + price, 0);
+        
+        // Detect currency symbol from first product
+        const currencyMatch = selectedProducts[0].price.match(/[$₱€£¥]/);
+        const currencySymbol = currencyMatch ? currencyMatch[0] : '$';
+        
+        totalElement.textContent = `${currencySymbol}${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    } else {
+        // If prices are in different formats, just show count
+        totalElement.textContent = `${selectedProducts.length} items selected`;
+    }
+}
+
+function submitQuote() {
+    if (selectedProducts.length === 0) {
+        showNotification('Please select at least one product', 'error');
+        return;
+    }
+    
+    const productList = selectedProducts.map(p => `- ${p.name} (${p.price})`).join('\n');
+    const totalPrice = document.getElementById('totalPrice').textContent;
+    
+    const message = `Quote Request:\n\n${productList}\n\nTotal: ${totalPrice}\n\nPlease contact us to complete your order!`;
+    
+    showNotification('Quote request prepared! Our team will contact you shortly.', 'success');
+    
+    // You can add email functionality or form submission here
+    console.log('Quote Request:', selectedProducts);
+    
+    // Close modal after delay
+    setTimeout(() => {
+        closeQuoteModal();
+    }, 2000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadServices();
     loadClients();
+    loadProducts();
+    
+    // Quote modal event listeners
+    const getQuoteBtn = document.getElementById('getQuoteBtn');
+    const getQuoteHeroBtn = document.getElementById('getQuoteHeroBtn');
+    const closeQuoteModalBtn = document.getElementById('closeQuoteModal');
+    const submitQuoteBtn = document.getElementById('submitQuoteBtn');
+    
+    if (getQuoteBtn) {
+        getQuoteBtn.addEventListener('click', openQuoteModal);
+    }
+    
+    if (getQuoteHeroBtn) {
+        getQuoteHeroBtn.addEventListener('click', openQuoteModal);
+    }
+    
+    if (closeQuoteModalBtn) {
+        closeQuoteModalBtn.addEventListener('click', closeQuoteModal);
+    }
+    
+    if (submitQuoteBtn) {
+        submitQuoteBtn.addEventListener('click', submitQuote);
+    }
 });
 

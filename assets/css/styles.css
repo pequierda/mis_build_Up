@@ -159,6 +159,11 @@ html {
     }
 }
 
+/* Product Quote Modal Styles */
+.product-checkbox:checked + div {
+    border-color: #3b82f6;
+}
+
 /* Mobile Menu Toggle (if needed later) */
 @media (max-width: 768px) {
     .service-card {
@@ -192,6 +197,15 @@ html {
     .gallery-image {
         min-height: 16rem;
         object-fit: cover;
+    }
+    
+    /* Quote modal mobile adjustments */
+    #quoteModal .bg-white {
+        max-height: 95vh;
+    }
+    
+    #totalPrice {
+        font-size: 1.5rem;
     }
 }
 

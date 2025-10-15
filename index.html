@@ -21,7 +21,7 @@
                     <a href="#about" class="text-gray-700 hover:text-blue-600 font-medium transition">About</a>
                     <a href="#contact" class="text-gray-700 hover:text-blue-600 font-medium transition">Contact</a>
                 </div>
-                <button class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition">Get Started</button>
+                <button id="getQuoteBtn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition">Get Quote</button>
             </div>
         </div>
     </nav>
@@ -31,7 +31,7 @@
             <h1 class="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">Transform Your Business with IT Excellence</h1>
             <p class="text-xl md:text-2xl mb-8 text-gray-100 max-w-3xl mx-auto">Offering tailored solutions in Starlink Internet, CCTV installation, custom software (POS, travel systems, personal apps), IT consulting, and network configuration—keeping you connected and secure.</p>
             <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <button class="bg-white text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Explore Services</button>
+                <button id="getQuoteHeroBtn" class="bg-white text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Get Quote</button>
                 <button class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition">Contact Us</button>
             </div>
         </div>
@@ -68,6 +68,41 @@
             <p class="text-gray-400">&copy; 2025 TechSolutions. All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Get Quote Modal -->
+    <div id="quoteModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white z-10">
+                <h2 class="text-2xl font-bold text-gray-900">Get Your Quote</h2>
+                <button id="closeQuoteModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 200px);">
+                <p class="text-gray-600 mb-6">Select the products you're interested in to get an instant quote.</p>
+                
+                <div id="productsQuoteList" class="space-y-4">
+                    <!-- Products will be loaded here -->
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm text-gray-500">Total Estimated Cost</p>
+                            <p id="totalPrice" class="text-3xl font-bold text-blue-600">$0.00</p>
+                        </div>
+                        <button id="submitQuoteBtn" class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold transition">
+                            Request Quote
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">* Prices are estimates. Final pricing may vary based on installation and configuration requirements.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
     <script src="assets/js/main.js"></script>
