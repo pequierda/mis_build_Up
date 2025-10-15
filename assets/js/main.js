@@ -36,7 +36,7 @@ function createServiceCard(service, rating) {
     const avgRating = parseFloat(rating.average) || 0;
     const count = parseInt(rating.count) || 0;
     
-    const iconSvg = `<svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${service.icon}"/></svg>`;
+        const iconSvg = `<img src="logo/me.png" alt="${service.title}" class="w-12 h-12 object-contain">`;
     
     return `
         <div class="service-card bg-white rounded-xl shadow-lg p-8 border border-gray-100">

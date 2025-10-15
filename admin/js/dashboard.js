@@ -84,7 +84,7 @@ function createServiceCard(service) {
     const title = service.title || 'Untitled Service';
     const description = service.description || 'No description provided';
     const color = service.color || 'text-blue-600';
-    const icon = service.icon || 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z';
+    const icon = service.icon || 'logo/me.png';
     const image = service.image || null;
     const id = service.id || 'unknown';
 
@@ -92,9 +92,7 @@ function createServiceCard(service) {
         <div class="service-card-admin bg-white rounded-xl shadow-lg p-6 border border-gray-100">
             ${image ? `<img src="${image}" alt="${title}" class="w-full h-32 object-cover rounded-lg mb-4">` : ''}
             <div class="${color} mb-3">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${icon}"/>
-                </svg>
+                <img src="${icon}" alt="${title}" class="w-10 h-10 object-contain">
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-2">${title}</h3>
             <p class="text-gray-600 text-sm mb-4">${description}</p>
@@ -258,7 +256,7 @@ document.getElementById('serviceForm').addEventListener('submit', async (e) => {
         title: document.getElementById('serviceTitle').value.trim(),
         description: document.getElementById('serviceDescription').value.trim(),
         color: document.getElementById('serviceColor').value,
-        icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', // Default check circle icon
+        icon: 'logo/me.png', // Custom logo
         image: document.getElementById('serviceImage').value.trim() || null
     };
     
