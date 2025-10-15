@@ -178,7 +178,7 @@ function showClientGallery(clientId) {
     
     galleryModal.innerHTML = `
         <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div class="flex justify-between items-center p-6 border-b">
+            <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white z-10">
                 <h2 class="text-2xl font-bold text-gray-900">${client.name}</h2>
                 <button onclick="closeClientGallery()" class="text-gray-500 hover:text-gray-700">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,7 +187,7 @@ function showClientGallery(clientId) {
                 </button>
             </div>
             
-            <div class="p-6">
+            <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 80px);">
                 ${client.company ? `<p class="text-blue-600 font-semibold mb-4">${client.company}</p>` : ''}
                 ${client.testimonial ? `<p class="text-gray-600 mb-6">"${client.testimonial}"</p>` : ''}
                 

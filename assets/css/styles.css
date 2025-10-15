@@ -122,14 +122,40 @@ html {
 
 /* Responsive adjustments for expanded images */
 @media (max-width: 768px) {
+    #clientGalleryGrid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem;
+        overflow-y: auto;
+        max-height: 60vh;
+    }
+    
+    .gallery-image-container {
+        width: 100%;
+    }
+    
     .gallery-image-container.expanded {
-        grid-column: span 1;
-        grid-row: span 1;
+        grid-column: span 1 !important;
+        grid-row: span 1 !important;
+    }
+    
+    .gallery-image {
+        height: 16rem;
+        width: 100%;
     }
     
     .gallery-image.expanded {
         height: 20rem;
-        transform: scale(1.05);
+        transform: scale(1.02);
+    }
+    
+    /* Ensure modal is scrollable on mobile */
+    #clientGalleryModal .bg-white {
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+    
+    #clientGalleryModal .p-6 {
+        padding: 1rem;
     }
 }
 
@@ -147,6 +173,25 @@ html {
     .client-slide .w-32 {
         width: 6rem;
         height: 6rem;
+    }
+    
+    /* Additional mobile fixes for client gallery */
+    .gallery-image-container {
+        min-height: 16rem;
+    }
+    
+    #clientGalleryModal {
+        padding: 0.5rem;
+    }
+    
+    #clientGalleryModal .bg-white {
+        border-radius: 1rem;
+    }
+    
+    /* Ensure images are properly sized on mobile */
+    .gallery-image {
+        min-height: 16rem;
+        object-fit: cover;
     }
 }
 
