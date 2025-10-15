@@ -74,13 +74,11 @@ export default async function handler(req, res) {
             }
 
             // Save back to Upstash
-            await fetch(`${UPSTASH_URL}/set/services_list`, {
+            await fetch(`${UPSTASH_URL}/set/services_list/${encodeURIComponent(JSON.stringify(services))}`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${UPSTASH_TOKEN}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify([JSON.stringify(services)])
+                    'Authorization': `Bearer ${UPSTASH_TOKEN}`
+                }
             });
 
             return res.status(200).json({
@@ -111,13 +109,11 @@ export default async function handler(req, res) {
             services = services.filter(s => s.id !== id);
 
             // Save back to Upstash
-            await fetch(`${UPSTASH_URL}/set/services_list`, {
+            await fetch(`${UPSTASH_URL}/set/services_list/${encodeURIComponent(JSON.stringify(services))}`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${UPSTASH_TOKEN}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify([JSON.stringify(services)])
+                    'Authorization': `Bearer ${UPSTASH_TOKEN}`
+                }
             });
 
             return res.status(200).json({
