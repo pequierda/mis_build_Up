@@ -353,6 +353,16 @@ function renderProductsList() {
                 updateSelectedProducts(e.target.dataset.productId, e.target.checked);
             });
         });
+        
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const productId = e.target.dataset.productId;
+                const checkbox = document.querySelector(`input[data-product-id="${productId}"]`);
+                if (checkbox && checkbox.checked) {
+                    updateSelectedProducts(productId, true);
+                }
+            });
+        });
     }, 100);
 }
 
@@ -362,7 +372,7 @@ function createProductQuoteItem(product) {
     const stockBadge = !isInStock ? '<span class="text-xs text-red-600 font-semibold ml-2">(Out of Stock)</span>' : '';
     
     return `
-        <label class="flex items-start gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition ${stockClass}">
+        <div class="flex items-start gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition ${stockClass}">
             <input type="checkbox" 
                 class="product-checkbox mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
                 data-product-id="${product.id}"
@@ -380,16 +390,31 @@ function createProductQuoteItem(product) {
                     <span class="text-lg font-bold text-blue-600 whitespace-nowrap">${product.price}</span>
                 </div>
                 ${product.description ? `<p class="text-sm text-gray-600 mt-1">${product.description}</p>` : ''}
+                
+                <div class="flex items-center gap-2 mt-2">
+                    <label class="text-sm text-gray-600">Qty:</label>
+                    <input type="number" 
+                        class="quantity-input w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent" 
+                        data-product-id="${product.id}"
+                        min="1" 
+                        value="1"
+                        ${!isInStock ? 'disabled' : ''}>
+                </div>
             </div>
-        </label>
+        </div>
     `;
 }
 
 function updateSelectedProducts(productId, isSelected) {
     const product = allProducts.find(p => p.id === productId);
+    const quantityInput = document.querySelector(`input[data-product-id="${productId}"].quantity-input`);
+    const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
     
     if (isSelected && product) {
-        selectedProducts.push(product);
+        // Remove existing product if it exists
+        selectedProducts = selectedProducts.filter(p => p.id !== productId);
+        // Add with quantity
+        selectedProducts.push({...product, quantity});
     } else {
         selectedProducts = selectedProducts.filter(p => p.id !== productId);
     }
@@ -406,25 +431,29 @@ function updateTotalPrice() {
     }
     
     // Try to calculate total if all prices are in the same format
-    const prices = selectedProducts.map(p => {
-        const priceStr = p.price.toString().replace(/[^0-9.,]/g, '');
-        return parseFloat(priceStr.replace(/,/g, ''));
-    });
+    const totalAmount = selectedProducts.reduce((sum, product) => {
+        const priceStr = product.price.toString().replace(/[^0-9.,]/g, '');
+        const price = parseFloat(priceStr.replace(/,/g, ''));
+        const quantity = product.quantity || 1;
+        return sum + (isNaN(price) ? 0 : price * quantity);
+    }, 0);
     
     // Check if all prices are valid numbers
-    const allValidPrices = prices.every(p => !isNaN(p));
+    const allValidPrices = selectedProducts.every(p => {
+        const priceStr = p.price.toString().replace(/[^0-9.,]/g, '');
+        return !isNaN(parseFloat(priceStr.replace(/,/g, '')));
+    });
     
-    if (allValidPrices) {
-        const total = prices.reduce((sum, price) => sum + price, 0);
-        
+    if (allValidPrices && totalAmount > 0) {
         // Detect currency symbol from first product
         const currencyMatch = selectedProducts[0].price.match(/[$₱€£¥]/);
         const currencySymbol = currencyMatch ? currencyMatch[0] : '$';
         
-        totalElement.textContent = `${currencySymbol}${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        totalElement.textContent = `${currencySymbol}${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     } else {
         // If prices are in different formats, just show count
-        totalElement.textContent = `${selectedProducts.length} items selected`;
+        const totalItems = selectedProducts.reduce((sum, p) => sum + (p.quantity || 1), 0);
+        totalElement.textContent = `${totalItems} items selected`;
     }
 }
 
@@ -434,7 +463,19 @@ function submitQuote() {
         return;
     }
     
-    const productList = selectedProducts.map(p => `- ${p.name} (${p.price})`).join('\n');
+    const productList = selectedProducts.map(p => {
+        const qty = p.quantity || 1;
+        const total = (() => {
+            const priceStr = p.price.toString().replace(/[^0-9.,]/g, '');
+            const price = parseFloat(priceStr.replace(/,/g, ''));
+            return isNaN(price) ? 0 : price * qty;
+        })();
+        const currencyMatch = p.price.match(/[$₱€£¥]/);
+        const currencySymbol = currencyMatch ? currencyMatch[0] : '$';
+        
+        return `- ${p.name} (${qty}x ${p.price} = ${currencySymbol}${total.toFixed(2)})`;
+    }).join('\n');
+    
     const totalPrice = document.getElementById('totalPrice').textContent;
     
     const message = `Quote Request:\n\n${productList}\n\nTotal: ${totalPrice}\n\nPlease contact us to complete your order!`;
