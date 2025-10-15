@@ -12,9 +12,9 @@
     color: #fbbf24;
 }
 
-/* Gradient Background */
+/* Gradient Background - Red, Blue, Black theme */
 .gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #dc2626 0%, #1d4ed8 50%, #1f2937 100%);
 }
 
 /* Service Card Animations */
