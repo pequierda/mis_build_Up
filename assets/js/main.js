@@ -136,7 +136,7 @@ async function loadClients() {
         
         renderClientsCarousel();
         renderCarouselDots();
-        startCarousel();
+        // Auto-carousel disabled - only manual navigation
     } catch (error) {
         console.error('Error loading clients:', error);
         document.getElementById('clientsCarousel').innerHTML = '<p class="text-center text-gray-500 py-12">Unable to load client images.</p>';
@@ -192,11 +192,12 @@ function renderCarouselDots() {
 }
 
 function startCarousel() {
-    if (clients.length <= 1) return;
+    // Auto-carousel disabled - only manual navigation
+    // if (clients.length <= 1) return;
     
-    slideInterval = setInterval(() => {
-        nextSlide();
-    }, 5000); // Change slide every 5 seconds
+    // slideInterval = setInterval(() => {
+    //     nextSlide();
+    // }, 5000); // Change slide every 5 seconds
 }
 
 function stopCarousel() {
@@ -232,26 +233,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (prevBtn) {
             prevBtn.addEventListener('click', () => {
-                stopCarousel();
                 prevSlide();
-                startCarousel();
             });
         }
         
         if (nextBtn) {
             nextBtn.addEventListener('click', () => {
-                stopCarousel();
                 nextSlide();
-                startCarousel();
             });
         }
         
-        // Pause carousel on hover
-        const carousel = document.getElementById('clientsCarousel');
-        if (carousel) {
-            carousel.addEventListener('mouseenter', stopCarousel);
-            carousel.addEventListener('mouseleave', startCarousel);
-        }
+        // Auto-carousel disabled - no hover pause needed
+        // const carousel = document.getElementById('clientsCarousel');
+        // if (carousel) {
+        //     carousel.addEventListener('mouseenter', stopCarousel);
+        //     carousel.addEventListener('mouseleave', startCarousel);
+        // }
     }, 100);
 });
 
