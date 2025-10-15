@@ -37,7 +37,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         }
     } catch (error) {
         console.error('Login error:', error);
-        errorMessage.textContent = `Login failed: ${error.message}. Please check your credentials and try again.`;
+        errorMessage.textContent = `Please check your credentials and try again.`;
         errorMessage.classList.remove('hidden');
     }
 });
