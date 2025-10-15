@@ -1,8 +1,8 @@
 async function loadServices() {
     try {
         const [servicesRes, ratingsRes] = await Promise.all([
-            fetch('api/admin/services.php'),
-            fetch('api/get-ratings.php')
+            fetch('api/admin/services'),
+            fetch('api/get-ratings')
         ]);
 
         const services = await servicesRes.json();
@@ -79,7 +79,7 @@ async function initializeDefaultServices() {
     ];
 
     for (const service of defaultServices) {
-        await fetch('api/admin/services.php', {
+        await fetch('api/admin/services', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(service)
@@ -142,7 +142,7 @@ function attachRatingListeners() {
 
 async function submitRating(serviceId, rating) {
     try {
-        const response = await fetch('api/rate.php', {
+        const response = await fetch('api/rate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ service_id: serviceId, rating })

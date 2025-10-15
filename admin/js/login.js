@@ -8,7 +8,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     errorMessage.classList.add('hidden');
     
     try {
-        const response = await fetch('../api/admin/auth.php?action=login', {
+        const response = await fetch('../api/admin/auth?action=login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
@@ -28,6 +28,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         const result = JSON.parse(responseText);
         
         if (result.success) {
+            // Store auth token
+            localStorage.setItem('admin_token', result.token);
             window.location.href = 'dashboard.html';
         } else {
             errorMessage.textContent = result.message || 'Invalid credentials';

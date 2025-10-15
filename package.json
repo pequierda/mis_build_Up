@@ -1,0 +1,13 @@
+{
+  "name": "mis-buildup",
+  "version": "1.0.0",
+  "description": "IT Solutions Services Website with Admin Panel",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": ["it-solutions", "services", "rating", "admin-panel"],
+  "author": "",
+  "license": "MIT"
+}
+

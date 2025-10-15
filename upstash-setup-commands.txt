@@ -28,3 +28,4 @@ KEYS *
 # you set the key name as the value. Run these commands again:
 # SET admin:username "admin"
 # SET admin:password "admin123"
+

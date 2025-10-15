@@ -34,7 +34,7 @@
 
             try {
                 // Test 1: Basic API endpoint
-                const testResponse = await fetch('api/test.php');
+                const testResponse = await fetch('api/test');
                 const testData = await testResponse.text();
                 
                 let testResult = '';
@@ -56,7 +56,7 @@
                 }
 
                 // Test 2: Admin auth endpoint
-                const authResponse = await fetch('api/admin/auth.php?action=check');
+                const authResponse = await fetch('api/admin/auth?action=check');
                 const authData = await authResponse.text();
                 
                 let authResult = '';
@@ -78,7 +78,7 @@
                 }
 
                 // Test 3: Services endpoint
-                const servicesResponse = await fetch('api/admin/services.php');
+                const servicesResponse = await fetch('api/admin/services');
                 const servicesData = await servicesResponse.text();
                 
                 let servicesResult = '';

@@ -1,22 +1,41 @@
 let currentEditingService = null;
 
+function getAuthToken() {
+    return localStorage.getItem('admin_token');
+}
+
+function getAuthHeaders() {
+    const token = getAuthToken();
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
 async function checkAuth() {
+    const token = getAuthToken();
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
     try {
-        const response = await fetch('../api/admin/auth.php?action=check');
+        const response = await fetch('../api/admin/auth?action=check', {
+            headers: getAuthHeaders()
+        });
         const result = await response.json();
         
         if (!result.logged_in) {
+            localStorage.removeItem('admin_token');
             window.location.href = 'login.html';
         }
     } catch (error) {
         console.error('Auth check failed:', error);
+        localStorage.removeItem('admin_token');
         window.location.href = 'login.html';
     }
 }
 
 async function loadServices() {
     try {
-        const response = await fetch('../api/admin/services.php');
+        const response = await fetch('../api/admin/services');
         const services = await response.json();
         
         const container = document.getElementById('servicesContainer');
@@ -78,7 +97,7 @@ function closeModal() {
 
 async function editService(serviceId) {
     try {
-        const response = await fetch('../api/admin/services.php');
+        const response = await fetch('../api/admin/services');
         const services = await response.json();
         const service = services.find(s => s.id === serviceId);
         
@@ -109,9 +128,12 @@ async function deleteService(serviceId) {
     if (!confirm('Are you sure you want to delete this service?')) return;
     
     try {
-        const response = await fetch('../api/admin/services.php', {
+        const response = await fetch('../api/admin/services', {
             method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                ...getAuthHeaders()
+            },
             body: JSON.stringify({ id: serviceId })
         });
         
@@ -181,9 +203,12 @@ document.getElementById('serviceForm').addEventListener('submit', async (e) => {
     };
     
     try {
-        const response = await fetch('../api/admin/services.php', {
+        const response = await fetch('../api/admin/services', {
             method: formData.id ? 'PUT' : 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                ...getAuthHeaders()
+            },
             body: JSON.stringify(formData)
         });
         
@@ -202,14 +227,9 @@ document.getElementById('serviceForm').addEventListener('submit', async (e) => {
     }
 });
 
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-    try {
-        await fetch('../api/admin/auth.php?action=logout', { method: 'POST' });
-        window.location.href = 'login.html';
-    } catch (error) {
-        console.error('Logout error:', error);
-        window.location.href = 'login.html';
-    }
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('admin_token');
+    window.location.href = 'login.html';
 });
 
 checkAuth();

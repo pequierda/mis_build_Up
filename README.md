@@ -37,35 +37,59 @@ A modern, professional IT solutions services webpage with anonymous rating funct
 2. **Import to Vercel**
    - Go to [Vercel](https://vercel.com)
    - Import your repository
-   - Add Environment Variables:
-     - `UPSTASH_REDIS_REST_URL` - Your Upstash Redis REST URL
-     - `UPSTASH_REDIS_REST_TOKEN` - Your Upstash Redis REST Token
-     - `ADMIN_USERNAME` - Admin login username (default: admin)
-     - `ADMIN_PASSWORD` - Admin login password (default: admin123)
+   - Vercel will auto-detect the configuration
 
-3. **Get Upstash Credentials**
+3. **Add Environment Variables**
+   
+   In Vercel Dashboard → Settings → Environment Variables:
+   - `UPSTASH_REDIS_REST_URL` - Your Upstash Redis REST URL
+   - `UPSTASH_REDIS_REST_TOKEN` - Your Upstash Redis REST Token
+
+4. **Get Upstash Credentials**
    - Go to [Upstash Console](https://console.upstash.com/)
    - Create or select your Redis database
    - Copy the **REST URL** and **REST Token**
 
-4. **Deploy!**
-   - Vercel will automatically deploy your site
+5. **Set Admin Credentials in Upstash CLI**
+   
+   In your Upstash Redis CLI, run:
+   ```bash
+   SET admin:username "admin"
+   SET admin:password "admin123"
+   ```
+   
+   Verify:
+   ```bash
+   GET admin:username
+   GET admin:password
+   ```
+
+6. **Deploy!**
+   - Push your code to trigger deployment
+   - Wait for deployment to complete
+   - Test at: `https://your-site.vercel.app/test.html`
 
 ### Local Development
 
-1. **Configure Environment Variables**
-   
-   Edit `.htaccess` (for Apache/XAMPP):
-   ```apache
-   SetEnv UPSTASH_REDIS_REST_URL "https://your-endpoint.upstash.io"
-   SetEnv UPSTASH_REDIS_REST_TOKEN "your_token_here"
-   SetEnv ADMIN_USERNAME "admin"
-   SetEnv ADMIN_PASSWORD "admin123"
+1. **Install Vercel CLI**
+   ```bash
+   npm install -g vercel
    ```
 
-2. **Start Local Server**
-   - Place files in your web server directory (XAMPP: `htdocs`)
-   - Navigate to: `http://localhost/MIS_buildUp/`
+2. **Set Environment Variables**
+   Create `.env` file in project root:
+   ```env
+   UPSTASH_REDIS_REST_URL=your_upstash_redis_url
+   UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token
+   ```
+
+3. **Run Local Dev Server**
+   ```bash
+   vercel dev
+   ```
+   
+4. **Access Locally**
+   - Navigate to: `http://localhost:3000`
 
 ### Access
 
@@ -90,16 +114,16 @@ MIS_buildUp/
 │   └── js/
 │       ├── login.js           # Login functionality
 │       └── dashboard.js       # Dashboard functionality
-├── config/
-│   └── upstash.php            # Upstash Redis client
 ├── api/
-│   ├── rate.php               # Submit rating endpoint
-│   ├── get-ratings.php        # Fetch ratings endpoint
+│   ├── rate.js                # Submit rating endpoint
+│   ├── get-ratings.js         # Fetch ratings endpoint
+│   ├── test.js                # Connection test endpoint
 │   └── admin/
-│       ├── auth.php           # Admin authentication
-│       └── services.php       # Service CRUD operations
-├── .htaccess                  # Apache config (local development)
+│       ├── auth.js            # Admin authentication
+│       └── services.js        # Service CRUD operations
+├── vercel.json                # Vercel configuration
 ├── .env.example               # Environment variables template
+├── test.html                  # Connection test page
 └── README.md                  # This file
 ```
 
@@ -189,9 +213,9 @@ Delete a service
 ## Technologies Used
 
 - **Frontend:** HTML5, Tailwind CSS, Flowbite, JavaScript (ES6+)
-- **Backend:** PHP 7.4+
+- **Backend:** Node.js Serverless Functions
 - **Database:** Upstash Redis
-- **Server:** Apache with mod_rewrite
+- **Deployment:** Vercel
 
 ## How It Works
 
