@@ -12,9 +12,9 @@
     color: #fbbf24;
 }
 
-/* Gradient Background - Red, Blue, Black theme */
+/* Gradient Background - Blue theme */
 .gradient-bg {
-    background: linear-gradient(135deg, #dc2626 0%, #1d4ed8 50%, #1f2937 100%);
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
 }
 
 /* Service Card Animations */
@@ -69,10 +69,52 @@ html {
     scroll-behavior: smooth;
 }
 
+/* Client Carousel Styles */
+#clientsCarousel {
+    min-height: 400px;
+}
+
+.client-slide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.client-slide img {
+    transition: transform 0.3s ease;
+}
+
+.client-slide:hover img {
+    transform: scale(1.05);
+}
+
+.dot {
+    cursor: pointer;
+}
+
+.dot:hover {
+    background-color: #3b82f6;
+}
+
+/* Smooth carousel transitions */
+#clientsCarousel {
+    transition: transform 0.5s ease-in-out;
+}
+
 /* Mobile Menu Toggle (if needed later) */
 @media (max-width: 768px) {
     .service-card {
         margin-bottom: 1rem;
+    }
+    
+    .client-slide .bg-white {
+        margin: 0 1rem;
+        padding: 1.5rem;
+    }
+    
+    .client-slide .w-32 {
+        width: 6rem;
+        height: 6rem;
     }
 }
 

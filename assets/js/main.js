@@ -119,7 +119,144 @@ function showNotification(message, type) {
     }, 3000);
 }
 
+// Client Carousel Functionality
+let currentSlide = 0;
+let clients = [];
+let slideInterval;
+
+async function loadClients() {
+    try {
+        const response = await fetch('api/clients');
+        clients = await response.json();
+        
+        if (!clients || clients.length === 0) {
+            document.getElementById('clientsCarousel').innerHTML = '<p class="text-center text-gray-500 py-12">No client images yet. Check back soon!</p>';
+            return;
+        }
+        
+        renderClientsCarousel();
+        renderCarouselDots();
+        startCarousel();
+    } catch (error) {
+        console.error('Error loading clients:', error);
+        document.getElementById('clientsCarousel').innerHTML = '<p class="text-center text-gray-500 py-12">Unable to load client images.</p>';
+    }
+}
+
+function renderClientsCarousel() {
+    const carousel = document.getElementById('clientsCarousel');
+    
+    // Duplicate clients for seamless infinite scroll
+    const duplicatedClients = [...clients, ...clients, ...clients];
+    
+    carousel.innerHTML = duplicatedClients.map((client, index) => {
+        const slideIndex = index % clients.length;
+        const isActive = index === clients.length + currentSlide;
+        
+        return `
+            <div class="client-slide ${isActive ? 'active' : ''} min-w-full flex-shrink-0 transition-transform duration-500 ease-in-out">
+                <div class="flex justify-center items-center">
+                    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-4">
+                        <div class="text-center">
+                            <div class="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden shadow-lg">
+                                <img src="${client.image}" alt="${client.name}" class="w-full h-full object-cover">
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">${client.name}</h3>
+                            ${client.company ? `<p class="text-blue-600 font-semibold mb-4">${client.company}</p>` : ''}
+                            ${client.testimonial ? `<p class="text-gray-600 italic">"${client.testimonial}"</p>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Position carousel to show the current slide
+    const slideWidth = 100;
+    const offset = -(clients.length + currentSlide) * slideWidth;
+    carousel.style.transform = `translateX(${offset}%)`;
+}
+
+function renderCarouselDots() {
+    const dotsContainer = document.getElementById('carouselDots');
+    
+    if (clients.length <= 1) {
+        dotsContainer.innerHTML = '';
+        return;
+    }
+    
+    dotsContainer.innerHTML = clients.map((_, index) => `
+        <button class="dot w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-blue-600' : 'bg-gray-300'}" 
+                onclick="goToSlide(${index})"></button>
+    `).join('');
+}
+
+function startCarousel() {
+    if (clients.length <= 1) return;
+    
+    slideInterval = setInterval(() => {
+        nextSlide();
+    }, 5000); // Change slide every 5 seconds
+}
+
+function stopCarousel() {
+    if (slideInterval) {
+        clearInterval(slideInterval);
+    }
+}
+
+function nextSlide() {
+    currentSlide = (currentSlide + 1) % clients.length;
+    renderClientsCarousel();
+    renderCarouselDots();
+}
+
+function prevSlide() {
+    currentSlide = (currentSlide - 1 + clients.length) % clients.length;
+    renderClientsCarousel();
+    renderCarouselDots();
+}
+
+function goToSlide(index) {
+    currentSlide = index;
+    renderClientsCarousel();
+    renderCarouselDots();
+}
+
+// Event listeners for navigation buttons
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners after DOM is loaded
+    setTimeout(() => {
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                stopCarousel();
+                prevSlide();
+                startCarousel();
+            });
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                stopCarousel();
+                nextSlide();
+                startCarousel();
+            });
+        }
+        
+        // Pause carousel on hover
+        const carousel = document.getElementById('clientsCarousel');
+        if (carousel) {
+            carousel.addEventListener('mouseenter', stopCarousel);
+            carousel.addEventListener('mouseleave', startCarousel);
+        }
+    }, 100);
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     loadServices();
+    loadClients();
 });
 
