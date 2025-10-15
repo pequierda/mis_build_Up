@@ -1,4 +1,9 @@
 async function loadServices() {
+    const servicesGrid = document.getElementById('servicesGrid');
+    
+    // Show loading message
+    servicesGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div><p>Please wait, fetching services...</p></div>';
+    
     try {
         const [servicesRes, ratingsRes] = await Promise.all([
             fetch('api/admin/services'),
@@ -17,7 +22,6 @@ async function loadServices() {
             }
         }
         
-        const servicesGrid = document.getElementById('servicesGrid');
         servicesGrid.innerHTML = services.map(service => {
             const rating = ratings[service.id] || { average: 0, count: 0 };
             return createServiceCard(service, rating);
@@ -26,6 +30,7 @@ async function loadServices() {
         attachRatingListeners();
     } catch (error) {
         console.error('Error loading services:', error);
+        servicesGrid.innerHTML = '<div class="col-span-full text-center text-red-500 py-12"><p>Failed to load services. Please try again later.</p></div>';
         showNotification('Failed to load services', 'error');
     }
 }
@@ -125,19 +130,24 @@ let clients = [];
 let slideInterval;
 
 async function loadClients() {
+    const clientsGrid = document.getElementById('clientsGrid');
+    
+    // Show loading message
+    clientsGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div><p>Please wait, fetching clients...</p></div>';
+    
     try {
         const response = await fetch('api/clients');
         clients = await response.json();
         
         if (!clients || clients.length === 0) {
-            document.getElementById('clientsGrid').innerHTML = '<p class="col-span-full text-center text-gray-500 py-12">No client images yet. Check back soon!</p>';
+            clientsGrid.innerHTML = '<p class="col-span-full text-center text-gray-500 py-12">No client images yet. Check back soon!</p>';
             return;
         }
         
         renderClientsGrid();
     } catch (error) {
         console.error('Error loading clients:', error);
-        document.getElementById('clientsGrid').innerHTML = '<p class="col-span-full text-center text-gray-500 py-12">Unable to load client images.</p>';
+        clientsGrid.innerHTML = '<div class="col-span-full text-center text-red-500 py-12"><p>Unable to load client images. Please try again later.</p></div>';
     }
 }
 
@@ -360,7 +370,13 @@ function closeQuoteModal() {
 function renderProductsList() {
     const container = document.getElementById('productsQuoteList');
     
-    if (!allProducts || allProducts.length === 0) {
+    // Show loading message if products are still loading
+    if (!allProducts) {
+        container.innerHTML = '<div class="text-center text-gray-500 py-8"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div><p>Please wait, fetching products...</p></div>';
+        return;
+    }
+    
+    if (allProducts.length === 0) {
         container.innerHTML = '<p class="text-center text-gray-500 py-8">No products available at the moment.</p>';
         return;
     }
