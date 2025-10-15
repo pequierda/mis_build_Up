@@ -48,21 +48,23 @@ Login at: `/admin/login.html`
 
 ### 3. Icons
 
-**Getting Icon SVG Paths:**
+**Easy Icon Selection:**
 
-1. Visit [Heroicons.com](https://heroicons.com)
-2. Search for an icon
-3. Click on the icon
-4. Copy the `d` attribute from the `<path>` tag
+No need to manually copy SVG paths! Just choose from the dropdown:
 
-**Example:**
-```html
-<!-- From Heroicons -->
-<path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999..." />
+- **Check Circle** - For completed/success services
+- **Cloud** - For cloud-related services
+- **Shield Check** - For security services
+- **Code** - For development services
+- **Chart Bar** - For analytics services
+- **Light Bulb** - For AI/innovation services
+- **Users** - For consulting services
+- **Settings** - For technical services
+- **Lightning** - For performance services
+- **CPU** - For hardware services
+- **Beaker** - For research services
 
-<!-- Copy only the d attribute value -->
-M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999...
-```
+**Default:** If no icon is selected, a check circle icon will be used automatically.
 
 **Available Colors:**
 - Blue (`text-blue-600`)

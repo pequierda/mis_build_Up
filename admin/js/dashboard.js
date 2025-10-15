@@ -259,9 +259,9 @@ document.getElementById('serviceForm').addEventListener('submit', async (e) => {
         return;
     }
     
+    // Set default icon if none selected
     if (!formData.icon) {
-        showNotification('Service icon is required', 'error');
-        return;
+        formData.icon = 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'; // Default check circle
     }
     
     try {
