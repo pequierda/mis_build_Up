@@ -451,7 +451,7 @@ function updateTotalPrice() {
     const totalElement = document.getElementById('totalPrice');
     
     if (selectedProducts.length === 0) {
-        totalElement.textContent = '$0.00';
+        totalElement.textContent = '₱0.00';
         return;
     }
     
@@ -470,9 +470,9 @@ function updateTotalPrice() {
     });
     
     if (allValidPrices && totalAmount > 0) {
-        // Detect currency symbol from first product
+        // Detect currency symbol from first product, default to peso if none found
         const currencyMatch = selectedProducts[0].price.match(/[$₱€£¥]/);
-        const currencySymbol = currencyMatch ? currencyMatch[0] : '$';
+        const currencySymbol = currencyMatch ? currencyMatch[0] : '₱';
         
         totalElement.textContent = `${currencySymbol}${totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     } else {
@@ -496,7 +496,7 @@ function submitQuote() {
             return isNaN(price) ? 0 : price * qty;
         })();
         const currencyMatch = p.price.match(/[$₱€£¥]/);
-        const currencySymbol = currencyMatch ? currencyMatch[0] : '$';
+        const currencySymbol = currencyMatch ? currencyMatch[0] : '₱';
         
         return `- ${p.name} (${qty}x ${p.price} = ${currencySymbol}${total.toFixed(2)})`;
     }).join('\n');
