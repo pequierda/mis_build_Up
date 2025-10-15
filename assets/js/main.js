@@ -337,6 +337,24 @@ function closeQuoteModal() {
     const modal = document.getElementById('quoteModal');
     modal.classList.add('hidden');
     selectedProducts = [];
+    
+    // Reset total cost to ₱0.00
+    const totalElement = document.getElementById('totalPrice');
+    if (totalElement) {
+        totalElement.textContent = '₱0.00';
+    }
+    
+    // Uncheck all checkboxes
+    const checkboxes = modal.querySelectorAll('.product-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    // Reset all quantity inputs to 1
+    const quantityInputs = modal.querySelectorAll('.quantity-input');
+    quantityInputs.forEach(input => {
+        input.value = 1;
+    });
 }
 
 function renderProductsList() {
