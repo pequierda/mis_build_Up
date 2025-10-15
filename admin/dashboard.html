@@ -30,12 +30,12 @@
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Manage Services</h1>
             <div class="flex gap-4">
-                <button id="manageClientsBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2">
+                <a href="clients.html" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                     </svg>
                     Manage Clients
-                </button>
+                </a>
                 <button id="addServiceBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -127,75 +127,9 @@
         </div>
     </div>
 
-    <!-- Client Management Modal -->
-    <div id="clientModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <div class="p-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 id="clientModalTitle" class="text-2xl font-bold text-gray-900">Manage Clients</h2>
-                        <button id="closeClientModal" class="text-gray-400 hover:text-gray-600">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8" id="clientsContainer">
-                        <!-- Client cards will be loaded here -->
-                    </div>
-                    
-                    <div class="border-t pt-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Add New Client</h3>
-                        <form id="clientForm" class="space-y-4">
-                            <input type="hidden" id="clientId">
-                            
-                            <div>
-                                <label for="clientName" class="block text-sm font-medium text-gray-700 mb-2">Client Name</label>
-                                <input type="text" id="clientName" name="name" required
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Enter client name">
-                            </div>
-                            
-                            <div>
-                                <label for="clientCompany" class="block text-sm font-medium text-gray-700 mb-2">Company (Optional)</label>
-                                <input type="text" id="clientCompany" name="company"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Enter company name">
-                            </div>
-                            
-                            <div>
-                                <label for="clientTestimonial" class="block text-sm font-medium text-gray-700 mb-2">Testimonial (Optional)</label>
-                                <textarea id="clientTestimonial" name="testimonial" rows="3"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Enter client testimonial"></textarea>
-                            </div>
-                            
-                            <div>
-                                <label for="clientImage" class="block text-sm font-medium text-gray-700 mb-2">Client Image URL</label>
-                                <input type="url" id="clientImage" name="image" required
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="https://example.com/client-image.jpg">
-                            </div>
-                            
-                            <div class="flex gap-4">
-                                <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium transition">
-                                    Save Client
-                                </button>
-                                <button type="button" id="cancelClientBtn" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-3 px-6 rounded-lg font-medium transition">
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
     <script src="js/dashboard.js"></script>
-    <script src="js/client-management.js"></script>
 </body>
 </html>
 
