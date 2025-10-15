@@ -12,16 +12,37 @@
     <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
+                <!-- Mobile Menu Button (Left Side) -->
+                <button id="mobileMenuBtn" class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                
+                <!-- Logo -->
                 <div class="flex items-center">
                     <img src="logo/me.png" alt="Build up" class="w-10 h-10 object-contain">
                     <span class="ml-3 text-2xl font-bold bg-gradient-to-r from-red-600 to-blue-600 bg-clip-text text-transparent">Build Up</span>
                 </div>
+                
+                <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-8">
                     <a href="#services" class="text-gray-700 hover:text-blue-600 font-medium transition">Services</a>
-                    <!-- <a href="#about" class="text-gray-700 hover:text-blue-600 font-medium transition">About</a> -->
+                    <a href="#clients" class="text-gray-700 hover:text-blue-600 font-medium transition">Clients</a>
                     <a href="#contact" class="text-gray-700 hover:text-blue-600 font-medium transition">Contact</a>
                 </div>
+                
+                <!-- Get Quote Button -->
                 <button id="getQuoteBtn" class="bg-gradient-to-r from-red-600 via-blue-600 to-black hover:from-red-700 hover:via-blue-700 hover:to-gray-800 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">Get Quote</button>
+            </div>
+            
+            <!-- Mobile Menu Dropdown -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-3">
+                    <a href="#services" class="text-gray-700 hover:text-blue-600 font-medium transition py-2">Services</a>
+                    <a href="#clients" class="text-gray-700 hover:text-blue-600 font-medium transition py-2">Clients</a>
+                    <a href="#contact" class="text-gray-700 hover:text-blue-600 font-medium transition py-2">Contact</a>
+                </div>
             </div>
         </div>
     </nav>
