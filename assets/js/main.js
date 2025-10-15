@@ -194,8 +194,8 @@ function showClientGallery(clientId) {
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="clientGalleryGrid">
                     ${images.map((image, index) => `
                         <div class="relative group gallery-image-container" data-index="${index}">
-                            <img src="${image}" alt="${client.name}" class="gallery-image w-full h-48 object-cover rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="resizeGalleryImage(this, ${index})">
-                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
+                            <img src="${image}" alt="${client.name}" class="gallery-image w-full h-48 object-cover rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer" data-index="${index}">
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center pointer-events-none">
                                 <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
                                 </svg>
@@ -208,6 +208,18 @@ function showClientGallery(clientId) {
     `;
     
     document.body.appendChild(galleryModal);
+    
+    // Add click event listeners after modal is created
+    setTimeout(() => {
+        const galleryImages = galleryModal.querySelectorAll('.gallery-image');
+        galleryImages.forEach((img, index) => {
+            img.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Image clicked:', index); // Debug log
+                resizeGalleryImage(img, index);
+            });
+        });
+    }, 100);
 }
 
 function closeClientGallery() {
@@ -246,12 +258,18 @@ function closeImageFullscreen() {
 let expandedImageIndex = null;
 
 function resizeGalleryImage(img, index) {
+    console.log('resizeGalleryImage called with index:', index); // Debug log
+    
     const container = img.closest('.gallery-image-container');
-    const allImages = document.querySelectorAll('.gallery-image');
-    const allContainers = document.querySelectorAll('.gallery-image-container');
+    const modal = document.getElementById('clientGalleryModal');
+    const allImages = modal ? modal.querySelectorAll('.gallery-image') : document.querySelectorAll('.gallery-image');
+    const allContainers = modal ? modal.querySelectorAll('.gallery-image-container') : document.querySelectorAll('.gallery-image-container');
+    
+    console.log('Found images:', allImages.length); // Debug log
     
     // If clicking the same image that's already expanded, collapse it
     if (expandedImageIndex === index) {
+        console.log('Collapsing image:', index); // Debug log
         // Collapse the expanded image
         allImages.forEach(image => {
             image.classList.remove('expanded');
@@ -262,6 +280,8 @@ function resizeGalleryImage(img, index) {
         expandedImageIndex = null;
         return;
     }
+    
+    console.log('Expanding image:', index); // Debug log
     
     // Reset all images to normal size
     allImages.forEach(image => {
@@ -275,6 +295,8 @@ function resizeGalleryImage(img, index) {
     img.classList.add('expanded');
     container.classList.add('expanded');
     expandedImageIndex = index;
+    
+    console.log('Classes added:', img.classList.toString(), container.classList.toString()); // Debug log
     
     // Force a reflow to ensure the expansion takes effect
     container.offsetHeight;
