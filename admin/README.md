@@ -48,23 +48,9 @@ Login at: `/admin/login.html`
 
 ### 3. Icons
 
-**Easy Icon Selection:**
+**Automatic Icon Assignment:**
 
-No need to manually copy SVG paths! Just choose from the dropdown:
-
-- **Check Circle** - For completed/success services
-- **Cloud** - For cloud-related services
-- **Shield Check** - For security services
-- **Code** - For development services
-- **Chart Bar** - For analytics services
-- **Light Bulb** - For AI/innovation services
-- **Users** - For consulting services
-- **Settings** - For technical services
-- **Lightning** - For performance services
-- **CPU** - For hardware services
-- **Beaker** - For research services
-
-**Default:** If no icon is selected, a check circle icon will be used automatically.
+All services automatically use a clean check circle icon. No icon selection needed - the system handles this automatically for a consistent, professional look.
 
 **Available Colors:**
 - Blue (`text-blue-600`)

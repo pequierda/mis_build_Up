@@ -161,7 +161,6 @@ async function editService(serviceId) {
         document.getElementById('serviceTitle').value = service.title || '';
         document.getElementById('serviceDescription').value = service.description || '';
         document.getElementById('serviceColor').value = service.color || 'text-blue-600';
-        document.getElementById('serviceIcon').value = service.icon || '';
         document.getElementById('serviceImage').value = service.image || '';
         
         if (service.image) {
@@ -259,7 +258,7 @@ document.getElementById('serviceForm').addEventListener('submit', async (e) => {
         title: document.getElementById('serviceTitle').value.trim(),
         description: document.getElementById('serviceDescription').value.trim(),
         color: document.getElementById('serviceColor').value,
-        icon: document.getElementById('serviceIcon').value.trim(),
+        icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', // Default check circle icon
         image: document.getElementById('serviceImage').value.trim() || null
     };
     
@@ -274,10 +273,7 @@ document.getElementById('serviceForm').addEventListener('submit', async (e) => {
         return;
     }
     
-    // Set default icon if none selected
-    if (!formData.icon) {
-        formData.icon = 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'; // Default check circle
-    }
+    // Icon is automatically set to default check circle
     
     try {
         console.log('Saving service:', formData);
