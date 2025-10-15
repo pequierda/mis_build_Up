@@ -191,10 +191,10 @@ function showClientGallery(clientId) {
                 ${client.company ? `<p class="text-blue-600 font-semibold mb-4">${client.company}</p>` : ''}
                 ${client.testimonial ? `<p class="text-gray-600 mb-6">"${client.testimonial}"</p>` : ''}
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    ${images.map(image => `
-                        <div class="relative group">
-                            <img src="${image}" alt="${client.name}" class="w-full h-48 object-cover rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onclick="openImageFullscreen('${image}')">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="clientGalleryGrid">
+                    ${images.map((image, index) => `
+                        <div class="relative group gallery-image-container" data-index="${index}">
+                            <img src="${image}" alt="${client.name}" class="gallery-image w-full h-48 object-cover rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="resizeGalleryImage(this, ${index})">
                             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
                                 <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
@@ -241,6 +241,47 @@ function closeImageFullscreen() {
     if (modal) {
         modal.remove();
     }
+}
+
+let expandedImageIndex = null;
+
+function resizeGalleryImage(img, index) {
+    const container = img.closest('.gallery-image-container');
+    const allImages = document.querySelectorAll('.gallery-image');
+    const allContainers = document.querySelectorAll('.gallery-image-container');
+    
+    // If clicking the same image that's already expanded, collapse it
+    if (expandedImageIndex === index) {
+        // Collapse the expanded image
+        allImages.forEach(image => {
+            image.classList.remove('expanded');
+        });
+        allContainers.forEach(cont => {
+            cont.classList.remove('expanded');
+        });
+        expandedImageIndex = null;
+        return;
+    }
+    
+    // Reset all images to normal size
+    allImages.forEach(image => {
+        image.classList.remove('expanded');
+    });
+    allContainers.forEach(cont => {
+        cont.classList.remove('expanded');
+    });
+    
+    // Expand the clicked image
+    img.classList.add('expanded');
+    container.classList.add('expanded');
+    expandedImageIndex = index;
+    
+    // Scroll the expanded image into view
+    container.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center',
+        inline: 'center'
+    });
 }
 
 // Carousel functions removed - now using grid layout

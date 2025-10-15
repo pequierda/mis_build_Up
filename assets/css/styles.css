@@ -97,6 +97,42 @@ html {
     overflow: visible;
 }
 
+/* Gallery Image Styles */
+.gallery-image-container {
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.gallery-image-container.expanded {
+    z-index: 10;
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.gallery-image {
+    transition: all 0.3s ease;
+    height: 12rem; /* h-48 equivalent */
+}
+
+.gallery-image.expanded {
+    height: 24rem; /* h-96 equivalent */
+    transform: scale(1.1);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+/* Responsive adjustments for expanded images */
+@media (max-width: 768px) {
+    .gallery-image-container.expanded {
+        grid-column: span 1;
+        grid-row: span 1;
+    }
+    
+    .gallery-image.expanded {
+        height: 20rem;
+        transform: scale(1.05);
+    }
+}
+
 /* Mobile Menu Toggle (if needed later) */
 @media (max-width: 768px) {
     .service-card {
