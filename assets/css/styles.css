@@ -104,20 +104,25 @@ html {
 }
 
 .gallery-image-container.expanded {
-    z-index: 10;
-    grid-column: span 2;
-    grid-row: span 2;
+    z-index: 10 !important;
+    grid-column: span 2 !important;
+    grid-row: span 2 !important;
+    position: relative;
 }
 
 .gallery-image {
     transition: all 0.3s ease;
     height: 12rem; /* h-48 equivalent */
+    width: 100%;
+    object-fit: cover;
 }
 
 .gallery-image.expanded {
-    height: 24rem; /* h-96 equivalent */
-    transform: scale(1.1);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    height: 24rem !important; /* h-96 equivalent */
+    transform: scale(1.1) !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
+    z-index: 15 !important;
+    position: relative;
 }
 
 /* Responsive adjustments for expanded images */
@@ -139,13 +144,13 @@ html {
     }
     
     .gallery-image {
-        height: 16rem;
+        height: 16rem !important;
         width: 100%;
     }
     
     .gallery-image.expanded {
-        height: 20rem;
-        transform: scale(1.02);
+        height: 20rem !important;
+        transform: scale(1.02) !important;
     }
     
     /* Ensure modal is scrollable on mobile */
@@ -156,6 +161,19 @@ html {
     
     #clientGalleryModal .p-6 {
         padding: 1rem;
+    }
+}
+
+/* Desktop specific gallery styles */
+@media (min-width: 769px) {
+    .gallery-image-container.expanded {
+        grid-column: span 2 !important;
+        grid-row: span 2 !important;
+    }
+    
+    .gallery-image.expanded {
+        height: 28rem !important; /* Larger on desktop */
+        transform: scale(1.05) !important;
     }
 }
 

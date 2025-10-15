@@ -276,6 +276,9 @@ function resizeGalleryImage(img, index) {
     container.classList.add('expanded');
     expandedImageIndex = index;
     
+    // Force a reflow to ensure the expansion takes effect
+    container.offsetHeight;
+    
     // Scroll the expanded image into view
     container.scrollIntoView({ 
         behavior: 'smooth', 
