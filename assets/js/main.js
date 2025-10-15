@@ -631,6 +631,16 @@ function submitQuote() {
     }, 2000);
 }
 
+function scrollToContact() {
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+        contactSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     loadServices();
     loadClients();
