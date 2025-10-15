@@ -45,15 +45,15 @@ export default async function handler(req, res) {
             const client = {
                 id: req.body.id || `client_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
                 name: req.body.name || '',
-                image: req.body.image || '',
+                images: req.body.images || (req.body.image ? [req.body.image] : []),
                 company: req.body.company || '',
                 testimonial: req.body.testimonial || ''
             };
 
-            if (!client.name || !client.image) {
+            if (!client.name || !client.images || client.images.length === 0) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Name and image are required'
+                    message: 'Name and at least one image are required'
                 });
             }
 

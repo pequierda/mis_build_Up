@@ -144,38 +144,102 @@ async function loadClients() {
 function renderClientsGrid() {
     const grid = document.getElementById('clientsGrid');
     
-    grid.innerHTML = clients.map(client => `
-        <div class="client-card bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="expandClient(this)">
-            <div class="text-center">
-                <div class="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden shadow-lg">
-                    <img src="${client.image}" alt="${client.name}" class="w-full h-full object-cover">
+    grid.innerHTML = clients.map(client => {
+        const firstImage = client.images ? client.images[0] : client.image;
+        const imageCount = client.images ? client.images.length : (client.image ? 1 : 0);
+        
+        return `
+            <div class="client-card bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="showClientGallery('${client.id}')">
+                <div class="text-center">
+                    <div class="relative w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden shadow-lg">
+                        <img src="${firstImage}" alt="${client.name}" class="w-full h-full object-cover">
+                        ${imageCount > 1 ? `<div class="absolute top-1 right-1 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">+${imageCount - 1}</div>` : ''}
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">${client.name}</h3>
+                    ${client.company ? `<p class="text-blue-600 font-semibold text-sm mb-2">${client.company}</p>` : ''}
+                    ${client.testimonial ? `<p class="text-gray-600 text-sm italic client-testimonial">"${client.testimonial}"</p>` : ''}
                 </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-1">${client.name}</h3>
-                ${client.company ? `<p class="text-blue-600 font-semibold text-sm mb-2">${client.company}</p>` : ''}
-                ${client.testimonial ? `<p class="text-gray-600 text-sm italic client-testimonial">"${client.testimonial}"</p>` : ''}
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
-function expandClient(card) {
-    // Toggle expanded class
-    card.classList.toggle('expanded');
+function showClientGallery(clientId) {
+    const client = clients.find(c => c.id === clientId);
+    if (!client) return;
     
-    // If expanding, show full testimonial
-    if (card.classList.contains('expanded')) {
-        const testimonial = card.querySelector('.client-testimonial');
-        if (testimonial) {
-            testimonial.style.display = 'block';
-            testimonial.style.maxHeight = 'none';
-        }
-    } else {
-        // If collapsing, truncate testimonial
-        const testimonial = card.querySelector('.client-testimonial');
-        if (testimonial) {
-            testimonial.style.maxHeight = '3rem';
-            testimonial.style.overflow = 'hidden';
-        }
+    const images = client.images || (client.image ? [client.image] : []);
+    if (images.length === 0) return;
+    
+    // Create gallery modal
+    const galleryModal = document.createElement('div');
+    galleryModal.className = 'fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4';
+    galleryModal.id = 'clientGalleryModal';
+    
+    galleryModal.innerHTML = `
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h2 class="text-2xl font-bold text-gray-900">${client.name}</h2>
+                <button onclick="closeClientGallery()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                ${client.company ? `<p class="text-blue-600 font-semibold mb-4">${client.company}</p>` : ''}
+                ${client.testimonial ? `<p class="text-gray-600 mb-6">"${client.testimonial}"</p>` : ''}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${images.map(image => `
+                        <div class="relative group">
+                            <img src="${image}" alt="${client.name}" class="w-full h-48 object-cover rounded-lg shadow-lg hover:shadow-xl transition-shadow cursor-pointer" onclick="openImageFullscreen('${image}')">
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
+                                <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                                </svg>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(galleryModal);
+}
+
+function closeClientGallery() {
+    const modal = document.getElementById('clientGalleryModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function openImageFullscreen(imageSrc) {
+    const fullscreenModal = document.createElement('div');
+    fullscreenModal.className = 'fixed inset-0 bg-black bg-opacity-90 z-60 flex items-center justify-center p-4';
+    fullscreenModal.id = 'imageFullscreenModal';
+    
+    fullscreenModal.innerHTML = `
+        <div class="relative max-w-6xl max-h-full">
+            <button onclick="closeImageFullscreen()" class="absolute top-4 right-4 text-white hover:text-gray-300 z-10">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            <img src="${imageSrc}" alt="Fullscreen" class="max-w-full max-h-full object-contain rounded-lg">
+        </div>
+    `;
+    
+    document.body.appendChild(fullscreenModal);
+}
+
+function closeImageFullscreen() {
+    const modal = document.getElementById('imageFullscreenModal');
+    if (modal) {
+        modal.remove();
     }
 }
 
