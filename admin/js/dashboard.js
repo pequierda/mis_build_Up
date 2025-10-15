@@ -1,5 +1,11 @@
 let currentEditingService = null;
 
+function generateServiceId() {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substr(2, 5);
+    return `service_${timestamp}_${random}`;
+}
+
 function getAuthToken() {
     return localStorage.getItem('admin_token');
 }
@@ -107,12 +113,21 @@ function createServiceCard(service) {
 function openModal(title = 'Add New Service') {
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('serviceModal').classList.remove('hidden');
+    
+    // Clear form and generate new ID for new services
+    if (title === 'Add New Service') {
+        document.getElementById('serviceForm').reset();
+        document.getElementById('serviceId').value = generateServiceId();
+        document.getElementById('imagePreview').classList.add('hidden');
+        currentEditingService = null;
+    }
 }
 
 function closeModal() {
     document.getElementById('serviceModal').classList.add('hidden');
     document.getElementById('serviceForm').reset();
     document.getElementById('imagePreview').classList.add('hidden');
+    document.getElementById('serviceId').value = '';
     currentEditingService = null;
 }
 
@@ -240,7 +255,7 @@ document.getElementById('serviceForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const formData = {
-        id: document.getElementById('serviceId').value || undefined,
+        id: document.getElementById('serviceId').value || generateServiceId(),
         title: document.getElementById('serviceTitle').value.trim(),
         description: document.getElementById('serviceDescription').value.trim(),
         color: document.getElementById('serviceColor').value,

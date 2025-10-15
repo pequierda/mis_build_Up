@@ -43,7 +43,7 @@ export default async function handler(req, res) {
 
         if (req.method === 'POST' || req.method === 'PUT') {
             const service = {
-                id: req.body.id || `service_${Date.now()}`,
+                id: req.body.id || `service_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
                 title: req.body.title || '',
                 description: req.body.description || '',
                 color: req.body.color || 'text-blue-600',

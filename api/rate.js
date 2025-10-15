@@ -29,15 +29,11 @@ export default async function handler(req, res) {
             });
         }
 
-        const validServices = [
-            'cloud-solutions', 'cybersecurity', 'web-development',
-            'data-analytics', 'ai-ml', 'it-consulting'
-        ];
-
-        if (!validServices.includes(service_id)) {
+        // Allow any service ID that starts with 'service_'
+        if (!service_id.startsWith('service_')) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid service ID'
+                message: 'Invalid service ID format'
             });
         }
 
