@@ -72,9 +72,10 @@ async function loadContactInfoForBooking() {
         const response = await fetch('api/contact');
         const contacts = await response.json();
         
-        // Find phone and email contacts
+        // Find phone, email, and messenger contacts
         const phoneContact = contacts.find(c => c.type === 'phone' && c.isActive !== false);
         const emailContact = contacts.find(c => c.type === 'email' && c.isActive !== false);
+        const messengerContact = contacts.find(c => c.type === 'social' && c.value.includes('m.me') && c.isActive !== false);
         
         // Update call button
         const callNowBtn = document.getElementById('callNowBtn');
@@ -100,11 +101,24 @@ async function loadContactInfoForBooking() {
             emailUsBtn.classList.add('opacity-50', 'cursor-not-allowed');
         }
         
+        // Update messenger button
+        const messengerUsBtn = document.getElementById('messengerUsBtn');
+        const messengerUsText = document.getElementById('messengerUsText');
+        if (messengerContact) {
+            messengerUsText.textContent = `Message Us: ${messengerContact.value.replace('https://', '')}`;
+            messengerUsBtn.onclick = () => window.open(messengerContact.value, '_blank');
+        } else {
+            messengerUsText.textContent = 'Message Us: Not Available';
+            messengerUsBtn.disabled = true;
+            messengerUsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        
     } catch (error) {
         console.error('Error loading contact info for booking:', error);
         // Set default values if loading fails
         document.getElementById('callNowText').textContent = 'Call Now: Contact Not Available';
         document.getElementById('emailUsText').textContent = 'Email Us: Contact Not Available';
+        document.getElementById('messengerUsText').textContent = 'Message Us: Contact Not Available';
     }
 }
 
