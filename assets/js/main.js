@@ -741,7 +741,7 @@ function updateTotalPrice() {
     }
 }
 
-function submitQuote() {
+async function submitQuote() {
     if (selectedProducts.length === 0) {
         showNotification('Please select at least one product', 'error');
         return;
@@ -767,11 +767,37 @@ function submitQuote() {
     // Encode the message for URL
     const encodedMessage = encodeURIComponent(message);
     
-    // Open Facebook Messenger with the quote details
-    const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
-    window.open(messengerUrl, '_blank');
-    
-    showNotification('Opening Messenger to send your quote request...', 'success');
+    try {
+        // Fetch contact information to get dynamic Messenger URL
+        const response = await fetch('api/contact');
+        const contacts = await response.json();
+        
+        // Find Messenger contact (social type with m.me in value)
+        const messengerContact = contacts.find(c => 
+            c.type === 'social' && 
+            c.value && 
+            c.value.includes('m.me') && 
+            c.isActive !== false
+        );
+        
+        if (messengerContact) {
+            // Use dynamic Messenger URL from contact info
+            const messengerUrl = `${messengerContact.value}?text=${encodedMessage}`;
+            window.open(messengerUrl, '_blank');
+            showNotification('Opening Messenger to send your quote request...', 'success');
+        } else {
+            // Fallback to default if no Messenger contact found
+            const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
+            window.open(messengerUrl, '_blank');
+            showNotification('Opening Messenger to send your quote request...', 'success');
+        }
+    } catch (error) {
+        console.error('Error loading contact info for quote:', error);
+        // Fallback to default Messenger URL
+        const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
+        window.open(messengerUrl, '_blank');
+        showNotification('Opening Messenger to send your quote request...', 'success');
+    }
     
     // Close modal after delay
     setTimeout(() => {
@@ -779,7 +805,7 @@ function submitQuote() {
     }, 1500);
 }
 
-function openProductMessenger(productId) {
+async function openProductMessenger(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) {
         showNotification('Product not found', 'error');
@@ -791,11 +817,37 @@ function openProductMessenger(productId) {
     // Encode the message for URL
     const encodedMessage = encodeURIComponent(message);
     
-    // Open Facebook Messenger with the product-specific message
-    const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
-    window.open(messengerUrl, '_blank');
-    
-    showNotification(`Opening Messenger to inquire about ${product.name}...`, 'success');
+    try {
+        // Fetch contact information to get dynamic Messenger URL
+        const response = await fetch('api/contact');
+        const contacts = await response.json();
+        
+        // Find Messenger contact (social type with m.me in value)
+        const messengerContact = contacts.find(c => 
+            c.type === 'social' && 
+            c.value && 
+            c.value.includes('m.me') && 
+            c.isActive !== false
+        );
+        
+        if (messengerContact) {
+            // Use dynamic Messenger URL from contact info
+            const messengerUrl = `${messengerContact.value}?text=${encodedMessage}`;
+            window.open(messengerUrl, '_blank');
+            showNotification(`Opening Messenger to inquire about ${product.name}...`, 'success');
+        } else {
+            // Fallback to default if no Messenger contact found
+            const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
+            window.open(messengerUrl, '_blank');
+            showNotification(`Opening Messenger to inquire about ${product.name}...`, 'success');
+        }
+    } catch (error) {
+        console.error('Error loading contact info for product inquiry:', error);
+        // Fallback to default Messenger URL
+        const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
+        window.open(messengerUrl, '_blank');
+        showNotification(`Opening Messenger to inquire about ${product.name}...`, 'success');
+    }
 }
 
 function scrollToContact() {
