@@ -503,6 +503,39 @@ function renderProductsList() {
                 }
             });
         });
+        
+        document.querySelectorAll('.quantity-increase').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const productId = e.target.dataset.productId;
+                const input = document.querySelector(`input[data-product-id="${productId}"].quantity-input`);
+                if (input && !input.disabled) {
+                    const currentValue = parseInt(input.value) || 1;
+                    input.value = currentValue + 1;
+                    
+                    const checkbox = document.querySelector(`input[data-product-id="${productId}"]`);
+                    if (checkbox && checkbox.checked) {
+                        updateSelectedProducts(productId, true);
+                    }
+                }
+            });
+        });
+        
+        document.querySelectorAll('.quantity-decrease').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const productId = e.target.dataset.productId;
+                const input = document.querySelector(`input[data-product-id="${productId}"].quantity-input`);
+                if (input && !input.disabled) {
+                    const currentValue = parseInt(input.value) || 1;
+                    const newValue = Math.max(1, currentValue - 1);
+                    input.value = newValue;
+                    
+                    const checkbox = document.querySelector(`input[data-product-id="${productId}"]`);
+                    if (checkbox && checkbox.checked) {
+                        updateSelectedProducts(productId, true);
+                    }
+                }
+            });
+        });
     }, 100);
 }
 
@@ -533,12 +566,26 @@ function createProductQuoteItem(product) {
                 
                 <div class="flex items-center gap-2 mt-2">
                     <label class="text-sm text-gray-600">Qty:</label>
-                    <input type="number" 
-                        class="quantity-input w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent" 
-                        data-product-id="${product.id}"
-                        min="1" 
-                        value="1"
-                        ${!isInStock ? 'disabled' : ''}>
+                    <div class="flex items-center border border-gray-300 rounded overflow-hidden">
+                        <button type="button" 
+                            class="quantity-decrease px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors ${!isInStock ? 'opacity-50 cursor-not-allowed' : ''}"
+                            data-product-id="${product.id}"
+                            ${!isInStock ? 'disabled' : ''}>
+                            −
+                        </button>
+                        <input type="number" 
+                            class="quantity-input w-12 px-2 py-1 text-sm border-0 text-center focus:ring-0 focus:outline-none" 
+                            data-product-id="${product.id}"
+                            min="1" 
+                            value="1"
+                            ${!isInStock ? 'disabled' : ''}>
+                        <button type="button" 
+                            class="quantity-increase px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors ${!isInStock ? 'opacity-50 cursor-not-allowed' : ''}"
+                            data-product-id="${product.id}"
+                            ${!isInStock ? 'disabled' : ''}>
+                            +
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -112,3 +112,4 @@ Vercel will automatically deploy. No PHP runtime needed!
 
 Your entire application now runs on JavaScript with Vercel serverless functions. Just push and deploy!
 
+

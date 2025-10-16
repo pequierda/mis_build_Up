@@ -204,3 +204,4 @@ document.addEventListener('DOMContentLoaded', function() {
         cancelClientBtn.addEventListener('click', closeClientModal);
     }
 });
+
