@@ -762,15 +762,23 @@ async function submitQuote() {
     
     const totalPrice = document.getElementById('totalPrice').textContent;
     
-    const message = `Hi! I'm interested in getting a quote for the following products:\n\n${productList}\n\nTotal Estimated Cost: ${totalPrice}\n\nPlease provide more details and availability. Thank you!`;
+    // Create a shorter, more compatible message
+    const message = `Hi! I need a quote for:\n\n${productList}\n\nTotal: ${totalPrice}\n\nPlease provide details and availability. Thank you!`;
     
     // Encode the message for URL
     const encodedMessage = encodeURIComponent(message);
+    
+    // Debug: Log the message and URL
+    console.log('Original message:', message);
+    console.log('Encoded message:', encodedMessage);
+    console.log('Message length:', message.length);
     
     try {
         // Fetch contact information to get dynamic Messenger URL
         const response = await fetch('api/contact');
         const contacts = await response.json();
+        
+        console.log('All contacts:', contacts);
         
         // Find Messenger contact (social type with m.me in value)
         const messengerContact = contacts.find(c => 
@@ -780,14 +788,18 @@ async function submitQuote() {
             c.isActive !== false
         );
         
+        console.log('Found messenger contact:', messengerContact);
+        
         if (messengerContact) {
             // Use dynamic Messenger URL from contact info
             const messengerUrl = `${messengerContact.value}?text=${encodedMessage}`;
+            console.log('Using dynamic URL:', messengerUrl);
             window.open(messengerUrl, '_blank');
             showNotification('Opening Messenger to send your quote request...', 'success');
         } else {
             // Fallback to default if no Messenger contact found
             const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
+            console.log('Using fallback URL:', messengerUrl);
             window.open(messengerUrl, '_blank');
             showNotification('Opening Messenger to send your quote request...', 'success');
         }
@@ -795,6 +807,7 @@ async function submitQuote() {
         console.error('Error loading contact info for quote:', error);
         // Fallback to default Messenger URL
         const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
+        console.log('Using error fallback URL:', messengerUrl);
         window.open(messengerUrl, '_blank');
         showNotification('Opening Messenger to send your quote request...', 'success');
     }
@@ -812,15 +825,23 @@ async function openProductMessenger(productId) {
         return;
     }
     
-    const message = `Hi! I'm interested in the "${product.name}" product.\n\nProduct Details:\n- Name: ${product.name}\n- Category: ${product.category || 'General'}\n- Price: ${product.price}\n- Description: ${product.description || 'No description available'}\n\nPlease provide more details about availability, installation, and any special requirements. Thank you!`;
+    // Create a shorter, more compatible message
+    const message = `Hi! I'm interested in "${product.name}" (${product.price}).\n\nPlease provide details about availability and installation. Thank you!`;
     
     // Encode the message for URL
     const encodedMessage = encodeURIComponent(message);
+    
+    // Debug: Log the message and URL
+    console.log('Product message:', message);
+    console.log('Encoded product message:', encodedMessage);
+    console.log('Product message length:', message.length);
     
     try {
         // Fetch contact information to get dynamic Messenger URL
         const response = await fetch('api/contact');
         const contacts = await response.json();
+        
+        console.log('All contacts for product:', contacts);
         
         // Find Messenger contact (social type with m.me in value)
         const messengerContact = contacts.find(c => 
@@ -830,14 +851,18 @@ async function openProductMessenger(productId) {
             c.isActive !== false
         );
         
+        console.log('Found messenger contact for product:', messengerContact);
+        
         if (messengerContact) {
             // Use dynamic Messenger URL from contact info
             const messengerUrl = `${messengerContact.value}?text=${encodedMessage}`;
+            console.log('Using dynamic product URL:', messengerUrl);
             window.open(messengerUrl, '_blank');
             showNotification(`Opening Messenger to inquire about ${product.name}...`, 'success');
         } else {
             // Fallback to default if no Messenger contact found
             const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
+            console.log('Using fallback product URL:', messengerUrl);
             window.open(messengerUrl, '_blank');
             showNotification(`Opening Messenger to inquire about ${product.name}...`, 'success');
         }
@@ -845,6 +870,7 @@ async function openProductMessenger(productId) {
         console.error('Error loading contact info for product inquiry:', error);
         // Fallback to default Messenger URL
         const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
+        console.log('Using error fallback product URL:', messengerUrl);
         window.open(messengerUrl, '_blank');
         showNotification(`Opening Messenger to inquire about ${product.name}...`, 'success');
     }
