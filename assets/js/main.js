@@ -730,17 +730,21 @@ function submitQuote() {
     
     const totalPrice = document.getElementById('totalPrice').textContent;
     
-    const message = `Quote Request:\n\n${productList}\n\nTotal: ${totalPrice}\n\nPlease contact us to complete your order!`;
+    const message = `Hi! I'm interested in getting a quote for the following products:\n\n${productList}\n\nTotal Estimated Cost: ${totalPrice}\n\nPlease provide more details and availability. Thank you!`;
     
-    showNotification('Quote request prepared! Our team will contact you shortly.', 'success');
+    // Encode the message for URL
+    const encodedMessage = encodeURIComponent(message);
     
-    // You can add email functionality or form submission here
-    console.log('Quote Request:', selectedProducts);
+    // Open Facebook Messenger with the quote details
+    const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
+    window.open(messengerUrl, '_blank');
+    
+    showNotification('Opening Messenger to send your quote request...', 'success');
     
     // Close modal after delay
     setTimeout(() => {
         closeQuoteModal();
-    }, 2000);
+    }, 1500);
 }
 
 function scrollToContact() {
