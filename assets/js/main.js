@@ -886,7 +886,127 @@ function scrollToContact() {
     }
 }
 
+// Load and apply dynamic branding
+async function loadBranding() {
+    try {
+        const response = await fetch('api/branding');
+        const branding = await response.json();
+        applyBranding(branding);
+    } catch (error) {
+        console.error('Error loading branding:', error);
+        // Apply default branding if API fails
+        applyBranding({
+            logo: 'logo/me.png',
+            primaryColor: '#dc2626',
+            secondaryColor: '#2563eb',
+            accentColor: '#000000',
+            companyName: 'Build Up',
+            tagline: 'MIS Solutions and Services'
+        });
+    }
+}
+
+// Apply branding to the page
+function applyBranding(branding) {
+    // Update page title
+    document.title = `${branding.companyName} - ${branding.tagline}`;
+    
+    // Update logo
+    const logos = document.querySelectorAll('img[alt="Build up"], img[alt="Logo"]');
+    logos.forEach(logo => {
+        logo.src = branding.logo;
+        logo.alt = branding.companyName;
+    });
+    
+    // Update company name in navigation
+    const companyNames = document.querySelectorAll('.company-name');
+    companyNames.forEach(element => {
+        element.textContent = branding.companyName;
+    });
+    
+    // Update tagline
+    const taglines = document.querySelectorAll('.tagline');
+    taglines.forEach(element => {
+        element.textContent = branding.tagline;
+    });
+    
+    // Apply dynamic CSS
+    const dynamicStyles = `
+        :root {
+            --primary-color: ${branding.primaryColor};
+            --secondary-color: ${branding.secondaryColor};
+            --accent-color: ${branding.accentColor};
+        }
+        
+        .gradient-primary {
+            background: linear-gradient(135deg, ${branding.primaryColor} 0%, ${branding.secondaryColor} 50%, ${branding.accentColor} 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, ${branding.primaryColor}, ${branding.secondaryColor});
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, ${branding.primaryColor}, ${branding.secondaryColor});
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, ${darkenColor(branding.primaryColor, 10)}, ${darkenColor(branding.secondaryColor, 10)});
+        }
+        
+        .text-primary {
+            color: ${branding.primaryColor};
+        }
+        
+        .text-secondary {
+            color: ${branding.secondaryColor};
+        }
+        
+        .border-primary {
+            border-color: ${branding.primaryColor};
+        }
+        
+        .bg-primary {
+            background-color: ${branding.primaryColor};
+        }
+        
+        .bg-secondary {
+            background-color: ${branding.secondaryColor};
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, ${branding.primaryColor} 0%, ${branding.secondaryColor} 50%, ${branding.accentColor} 100%);
+        }
+        
+        .hero-gradient::before {
+            background: linear-gradient(135deg, ${branding.accentColor}20 0%, ${branding.primaryColor}30 100%);
+        }
+    `;
+    
+    const styleElement = document.getElementById('dynamicBranding');
+    if (styleElement) {
+        styleElement.textContent = dynamicStyles;
+    }
+}
+
+// Helper function to darken colors
+function darkenColor(color, percent) {
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) - amt;
+    const G = (num >> 8 & 0x00FF) - amt;
+    const B = (num & 0x0000FF) - amt;
+    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+        (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    loadBranding();
     loadServices();
     loadClients();
     loadContactInfo();

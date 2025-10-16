@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branding Setup - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center">
+                    <img src="../logo/me.png" alt="Build up" class="w-10 h-10 object-contain">
+                    <span class="ml-3 text-2xl font-bold bg-gradient-to-r from-red-600 to-blue-600 bg-clip-text text-transparent">Branding Setup</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="dashboard.html" class="text-gray-700 hover:text-blue-600 font-medium transition">Dashboard</a>
+                    <a href="login.html" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Branding Setup</h1>
+                <p class="text-gray-600">Customize your website's appearance, colors, and branding elements.</p>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="mb-8 p-6 bg-gray-50 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Live Preview</h3>
+                <div id="brandingPreview" class="border border-gray-200 rounded-lg p-4 bg-white">
+                    <div class="flex items-center mb-4">
+                        <img id="previewLogo" src="logo/me.png" alt="Logo" class="w-12 h-12 object-contain mr-3">
+                        <div>
+                            <h2 id="previewCompanyName" class="text-xl font-bold">Build Up</h2>
+                            <p id="previewTagline" class="text-sm text-gray-600">MIS Solutions and Services</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="previewButton1" class="px-4 py-2 rounded-lg text-white font-medium">Primary Button</button>
+                        <button id="previewButton2" class="px-4 py-2 rounded-lg text-white font-medium">Secondary Button</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branding Form -->
+            <form id="brandingForm" class="space-y-6">
+                <!-- Company Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                        <input type="text" id="companyName" name="companyName" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Build Up">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tagline</label>
+                        <input type="text" id="tagline" name="tagline" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="MIS Solutions and Services">
+                    </div>
+                </div>
+
+                <!-- Logo -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Logo URL</label>
+                    <input type="url" id="logo" name="logo" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="logo/me.png">
+                    <p class="text-sm text-gray-500 mt-1">Enter the path to your logo image (e.g., logo/me.png)</p>
+                </div>
+
+                <!-- Color Scheme -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Primary Color</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="color" id="primaryColor" name="primaryColor" 
+                                   class="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                                   value="#dc2626">
+                            <input type="text" id="primaryColorText" 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="#dc2626">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Main brand color (buttons, headings)</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Secondary Color</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="color" id="secondaryColor" name="secondaryColor" 
+                                   class="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                                   value="#2563eb">
+                            <input type="text" id="secondaryColorText" 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="#2563eb">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Secondary brand color (accents)</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Accent Color</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="color" id="accentColor" name="accentColor" 
+                                   class="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                                   value="#000000">
+                            <input type="text" id="accentColorText" 
+                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="#000000">
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Accent color (text, borders)</p>
+                    </div>
+                </div>
+
+                <!-- Preset Color Schemes -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quick Color Presets</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button type="button" class="preset-btn p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition" 
+                                data-primary="#dc2626" data-secondary="#2563eb" data-accent="#000000">
+                            <div class="flex space-x-1 mb-2">
+                                <div class="w-4 h-4 rounded" style="background-color: #dc2626;"></div>
+                                <div class="w-4 h-4 rounded" style="background-color: #2563eb;"></div>
+                                <div class="w-4 h-4 rounded" style="background-color: #000000;"></div>
+                            </div>
+                            <p class="text-sm font-medium">Red-Blue-Black</p>
+                        </button>
+                        
+                        <button type="button" class="preset-btn p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition" 
+                                data-primary="#059669" data-secondary="#0d9488" data-accent="#1f2937">
+                            <div class="flex space-x-1 mb-2">
+                                <div class="w-4 h-4 rounded" style="background-color: #059669;"></div>
+                                <div class="w-4 h-4 rounded" style="background-color: #0d9488;"></div>
+                                <div class="w-4 h-4 rounded" style="background-color: #1f2937;"></div>
+                            </div>
+                            <p class="text-sm font-medium">Green-Teal</p>
+                        </button>
+                        
+                        <button type="button" class="preset-btn p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition" 
+                                data-primary="#7c3aed" data-secondary="#a855f7" data-accent="#1f2937">
+                            <div class="flex space-x-1 mb-2">
+                                <div class="w-4 h-4 rounded" style="background-color: #7c3aed;"></div>
+                                <div class="w-4 h-4 rounded" style="background-color: #a855f7;"></div>
+                                <div class="w-4 h-4 rounded" style="background-color: #1f2937;"></div>
+                            </div>
+                            <p class="text-sm font-medium">Purple-Violet</p>
+                        </button>
+                        
+                        <button type="button" class="preset-btn p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition" 
+                                data-primary="#ea580c" data-secondary="#f59e0b" data-accent="#1f2937">
+                            <div class="flex space-x-1 mb-2">
+                                <div class="w-4 h-4 rounded" style="background-color: #ea580c;"></div>
+                                <div class="w-4 h-4 rounded" style="background-color: #f59e0b;"></div>
+                                <div class="w-4 h-4 rounded" style="background-color: #1f2937;"></div>
+                            </div>
+                            <p class="text-sm font-medium">Orange-Yellow</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <button type="button" id="resetBtn" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                        Reset to Default
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                        Save Branding
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/setup.js"></script>
+</body>
+</html>
