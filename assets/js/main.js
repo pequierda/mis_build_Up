@@ -582,26 +582,27 @@ function createProductQuoteItem(product) {
     const stockBadge = !isInStock ? '<span class="text-xs text-red-600 font-semibold ml-2">(Out of Stock)</span>' : '';
     
     return `
-        <div class="flex items-start gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition ${stockClass}">
+        <div class="flex items-start gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-red-50 hover:shadow-md transition-all duration-300 cursor-pointer group ${stockClass}" onclick="openProductMessenger('${product.id}')">
             <input type="checkbox" 
                 class="product-checkbox mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
                 data-product-id="${product.id}"
-                ${!isInStock ? 'disabled' : ''}>
+                ${!isInStock ? 'disabled' : ''}
+                onclick="event.stopPropagation()">
             
             ${product.imageUrl ? `
-                <div class="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden shadow">
-                    <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover">
+                <div class="w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden shadow group-hover:shadow-lg transition-shadow">
+                    <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 </div>
             ` : ''}
             
             <div class="flex-1 min-w-0">
                 <div class="flex items-start justify-between gap-2">
-                    <h4 class="font-semibold text-gray-900">${product.name}${stockBadge}</h4>
+                    <h4 class="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">${product.name}${stockBadge}</h4>
                     <span class="text-lg font-bold text-blue-600 whitespace-nowrap">${product.price}</span>
                 </div>
-                ${product.description ? `<p class="text-sm text-gray-600 mt-1">${product.description}</p>` : ''}
+                ${product.description ? `<p class="text-sm text-gray-600 mt-1 group-hover:text-gray-700 transition-colors">${product.description}</p>` : ''}
                 
-                <div class="flex items-center gap-2 mt-2">
+                <div class="flex items-center gap-2 mt-2" onclick="event.stopPropagation()">
                     <label class="text-sm text-gray-600">Qty:</label>
                     <div class="flex items-center border border-gray-300 rounded overflow-hidden">
                         <button type="button" 
@@ -623,6 +624,14 @@ function createProductQuoteItem(product) {
                             +
                         </button>
                     </div>
+                </div>
+                
+                <!-- Click hint -->
+                <div class="mt-2 flex items-center gap-1 text-xs text-gray-400 group-hover:text-blue-500 transition-colors">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                    <span>Click to message about this product</span>
                 </div>
             </div>
         </div>
@@ -768,6 +777,25 @@ function submitQuote() {
     setTimeout(() => {
         closeQuoteModal();
     }, 1500);
+}
+
+function openProductMessenger(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) {
+        showNotification('Product not found', 'error');
+        return;
+    }
+    
+    const message = `Hi! I'm interested in the "${product.name}" product.\n\nProduct Details:\n- Name: ${product.name}\n- Category: ${product.category || 'General'}\n- Price: ${product.price}\n- Description: ${product.description || 'No description available'}\n\nPlease provide more details about availability, installation, and any special requirements. Thank you!`;
+    
+    // Encode the message for URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // Open Facebook Messenger with the product-specific message
+    const messengerUrl = `https://m.me/BuildUpSrvcs?text=${encodedMessage}`;
+    window.open(messengerUrl, '_blank');
+    
+    showNotification(`Opening Messenger to inquire about ${product.name}...`, 'success');
 }
 
 function scrollToContact() {
