@@ -61,13 +61,13 @@ async function bookService(serviceId, serviceTitle) {
     // Show modal
     document.getElementById('bookServiceModal').classList.remove('hidden');
     
-    // Load contact information
-    await loadContactInfoForBooking();
+    // Load contact information with service title
+    await loadContactInfoForBooking(serviceTitle);
     
     console.log('Booking requested for:', serviceTitle, serviceId);
 }
 
-async function loadContactInfoForBooking() {
+async function loadContactInfoForBooking(serviceTitle = '') {
     try {
         const response = await fetch('api/contact');
         const contacts = await response.json();
@@ -101,12 +101,21 @@ async function loadContactInfoForBooking() {
             emailUsBtn.classList.add('opacity-50', 'cursor-not-allowed');
         }
         
-        // Update messenger button
+        // Update messenger button with service-specific message
         const messengerUsBtn = document.getElementById('messengerUsBtn');
         const messengerUsText = document.getElementById('messengerUsText');
         if (messengerContact) {
             messengerUsText.textContent = `Message Us: ${messengerContact.value.replace('https://', '')}`;
-            messengerUsBtn.onclick = () => window.open(messengerContact.value, '_blank');
+            
+            // Create service-specific message
+            const message = serviceTitle ? 
+                `Hi! I'm interested in the services you offer for the ${serviceTitle} service. Please provide more details and availability. Thank you!` :
+                `Hi! I'm interested in the services you offer. Please provide more details and availability. Thank you!`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const messengerUrl = `${messengerContact.value}?text=${encodedMessage}`;
+            
+            messengerUsBtn.onclick = () => window.open(messengerUrl, '_blank');
         } else {
             messengerUsText.textContent = 'Message Us: Not Available';
             messengerUsBtn.disabled = true;
