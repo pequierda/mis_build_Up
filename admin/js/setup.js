@@ -8,6 +8,31 @@ function checkAuth() {
     return true;
 }
 
+// Test authentication
+async function testAuth() {
+    try {
+        const response = await fetch('../api/admin/auth?action=check', {
+            method: 'GET',
+            headers: getAuthHeaders()
+        });
+        
+        const result = await response.json();
+        console.log('Auth test result:', result);
+        
+        if (!result.success || !result.logged_in) {
+            console.log('Authentication failed, redirecting to login');
+            window.location.href = 'login.html';
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Auth test error:', error);
+        window.location.href = 'login.html';
+        return false;
+    }
+}
+
 // Get auth headers
 function getAuthHeaders() {
     const token = localStorage.getItem('admin_token');
@@ -20,22 +45,28 @@ function getAuthHeaders() {
 // Load current branding settings
 async function loadBrandingSettings() {
     try {
+        console.log('Loading branding settings...');
         const response = await fetch('../api/branding', {
             method: 'GET',
             headers: getAuthHeaders()
         });
         
+        console.log('Load response status:', response.status);
+        
         if (!response.ok) {
-            throw new Error('Failed to load branding settings');
+            const errorText = await response.text();
+            console.error('Load error response:', errorText);
+            throw new Error(`Failed to load branding settings: ${response.status}`);
         }
         
         const branding = await response.json();
+        console.log('Loaded branding:', branding);
         populateForm(branding);
         updatePreview(branding);
         
     } catch (error) {
         console.error('Error loading branding settings:', error);
-        showNotification('Error loading branding settings', 'error');
+        showNotification(`Error loading branding settings: ${error.message}`, 'error');
     }
 }
 
@@ -162,23 +193,39 @@ function setupPresetButtons() {
 // Save branding settings
 async function saveBrandingSettings(brandingData) {
     try {
+        console.log('Sending branding data:', brandingData);
+        console.log('Auth headers:', getAuthHeaders());
+        
         const response = await fetch('../api/branding', {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(brandingData)
         });
         
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+        
         if (!response.ok) {
-            throw new Error('Failed to save branding settings');
+            let errorMessage = 'Failed to save branding settings';
+            try {
+                const errorData = JSON.parse(responseText);
+                errorMessage = errorData.message || errorMessage;
+            } catch (e) {
+                errorMessage = `HTTP ${response.status}: ${responseText}`;
+            }
+            throw new Error(errorMessage);
         }
         
-        const result = await response.json();
+        const result = JSON.parse(responseText);
         showNotification('Branding settings saved successfully!', 'success');
         return result;
         
     } catch (error) {
         console.error('Error saving branding settings:', error);
-        showNotification('Error saving branding settings', 'error');
+        showNotification(`Error saving branding settings: ${error.message}`, 'error');
         throw error;
     }
 }
@@ -266,8 +313,12 @@ function handleLogoUpload() {
 }
 
 // Initialize page
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     if (!checkAuth()) return;
+    
+    // Test authentication before proceeding
+    const isAuthenticated = await testAuth();
+    if (!isAuthenticated) return;
     
     // Load current settings
     loadBrandingSettings();
