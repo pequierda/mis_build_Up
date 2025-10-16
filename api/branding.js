@@ -5,6 +5,25 @@ const redis = new Redis({
     token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
+// Check if user is authenticated
+async function isAuthenticated(req) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return false;
+    }
+    
+    const token = authHeader.substring(7);
+    
+    try {
+        // Get stored admin token from Redis
+        const storedToken = await redis.get('admin_token');
+        return storedToken === token;
+    } catch (error) {
+        console.error('Auth check error:', error);
+        return false;
+    }
+}
+
 export default async function handler(req, res) {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,13 +39,22 @@ export default async function handler(req, res) {
         const { method } = req;
 
         if (method === 'GET') {
-            // Get branding settings
+            // Get branding settings (public access)
             const brandingJson = await redis.get('branding_settings');
             const branding = brandingJson ? JSON.parse(brandingJson) : getDefaultBranding();
             
             res.status(200).json(branding);
         } 
         else if (method === 'POST' || method === 'PUT') {
+            // Check authentication for updates
+            const authenticated = await isAuthenticated(req);
+            if (!authenticated) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Unauthorized. Please login.'
+                });
+            }
+
             // Update branding settings
             const { logo, primaryColor, secondaryColor, accentColor, companyName, tagline } = req.body;
 

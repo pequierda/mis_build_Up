@@ -52,6 +52,24 @@ function populateForm(branding) {
     document.getElementById('primaryColorText').value = branding.primaryColor || '#dc2626';
     document.getElementById('secondaryColorText').value = branding.secondaryColor || '#2563eb';
     document.getElementById('accentColorText').value = branding.accentColor || '#000000';
+    
+    // Update logo preview
+    updateLogoPreview(branding.logo || 'logo/me.png');
+}
+
+// Update logo preview
+function updateLogoPreview(logoPath) {
+    const logoPreview = document.getElementById('logoPreview');
+    const logoPathElement = document.getElementById('logoPath');
+    
+    if (logoPreview) {
+        logoPreview.src = logoPath;
+        logoPreview.alt = 'Logo Preview';
+    }
+    
+    if (logoPathElement) {
+        logoPathElement.textContent = logoPath;
+    }
 }
 
 // Update live preview
@@ -79,6 +97,9 @@ function updatePreview(branding) {
     
     // Update preview container colors
     preview.style.borderColor = branding.accentColor || '#000000';
+    
+    // Update logo preview
+    updateLogoPreview(branding.logo || 'logo/me.png');
 }
 
 // Sync color picker with text input
@@ -203,6 +224,47 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
+// Handle logo file upload
+function handleLogoUpload() {
+    const fileInput = document.getElementById('logoUpload');
+    const uploadBtn = document.getElementById('uploadLogoBtn');
+    
+    if (fileInput && uploadBtn) {
+        uploadBtn.addEventListener('click', () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                showNotification('Please select a file first', 'warning');
+                return;
+            }
+            
+            // Validate file size (2MB max)
+            if (file.size > 2 * 1024 * 1024) {
+                showNotification('File size must be less than 2MB', 'error');
+                return;
+            }
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showNotification('Please select an image file', 'error');
+                return;
+            }
+            
+            // Create object URL for preview
+            const objectURL = URL.createObjectURL(file);
+            
+            // Update logo input with a temporary path
+            const logoInput = document.getElementById('logo');
+            logoInput.value = objectURL;
+            
+            // Update preview
+            updateLogoPreview(objectURL);
+            updatePreviewFromForm();
+            
+            showNotification('Logo uploaded successfully! Remember to save your changes.', 'success');
+        });
+    }
+}
+
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     if (!checkAuth()) return;
@@ -213,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup event listeners
     syncColorInputs();
     setupPresetButtons();
+    handleLogoUpload();
     
     // Form submission
     document.getElementById('brandingForm').addEventListener('submit', async (e) => {
@@ -243,4 +306,13 @@ document.addEventListener('DOMContentLoaded', () => {
     formInputs.forEach(input => {
         input.addEventListener('input', updatePreviewFromForm);
     });
+    
+    // Logo input change
+    const logoInput = document.getElementById('logo');
+    if (logoInput) {
+        logoInput.addEventListener('input', (e) => {
+            updateLogoPreview(e.target.value);
+            updatePreviewFromForm();
+        });
+    }
 });

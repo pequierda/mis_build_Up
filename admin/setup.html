@@ -70,11 +70,42 @@
 
                 <!-- Logo -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Logo URL</label>
-                    <input type="url" id="logo" name="logo" 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="logo/me.png">
-                    <p class="text-sm text-gray-500 mt-1">Enter the path to your logo image (e.g., logo/me.png)</p>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Logo</label>
+                    <div class="space-y-4">
+                        <!-- Logo URL Input -->
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Logo URL</label>
+                            <input type="url" id="logo" name="logo" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="logo/me.png">
+                            <p class="text-sm text-gray-500 mt-1">Enter the path to your logo image (e.g., logo/me.png)</p>
+                        </div>
+                        
+                        <!-- File Upload -->
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Or Upload New Logo</label>
+                            <div class="flex items-center space-x-4">
+                                <input type="file" id="logoUpload" accept="image/*" 
+                                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                <button type="button" id="uploadLogoBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                    Upload
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1">Upload PNG, JPG, or SVG files (max 2MB)</p>
+                        </div>
+                        
+                        <!-- Current Logo Preview -->
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Current Logo Preview</label>
+                            <div class="flex items-center space-x-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                                <img id="logoPreview" src="logo/me.png" alt="Logo Preview" class="w-16 h-16 object-contain border border-gray-300 rounded">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Logo Preview</p>
+                                    <p id="logoPath" class="text-xs text-gray-500">logo/me.png</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Color Scheme -->
