@@ -239,6 +239,30 @@
             <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 200px);">
                 <p class="text-gray-600 mb-6">Select the products you're interested in to get an instant quote.</p>
                 
+                <!-- Search Field -->
+                <div class="mb-6">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        <input type="text" 
+                            id="productSearchInput" 
+                            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                            placeholder="Search products by name, category, or description..."
+                            autocomplete="off">
+                        <button type="button" 
+                            id="clearSearchBtn" 
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
+                            <svg class="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="searchResultsCount" class="text-sm text-gray-500 mt-2 hidden"></div>
+                </div>
+                
                 <div id="productsQuoteList" class="space-y-4">
                     <!-- Products will be loaded here -->
                 </div>

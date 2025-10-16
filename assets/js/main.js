@@ -407,14 +407,18 @@ function createContactCard(contact) {
 // Product Quote Functionality
 let allProducts = [];
 let selectedProducts = [];
+let filteredProducts = [];
+let currentSearchQuery = '';
 
 async function loadProducts() {
     try {
         const response = await fetch('api/products');
         allProducts = await response.json();
+        filteredProducts = [...allProducts]; // Initialize filtered products
     } catch (error) {
         console.error('Error loading products:', error);
         allProducts = [];
+        filteredProducts = [];
     }
 }
 
@@ -446,6 +450,9 @@ function closeQuoteModal() {
     quantityInputs.forEach(input => {
         input.value = 1;
     });
+    
+    // Reset search
+    clearSearch();
 }
 
 function renderProductsList() {
@@ -457,13 +464,17 @@ function renderProductsList() {
         return;
     }
     
-    if (allProducts.length === 0) {
-        container.innerHTML = '<p class="text-center text-gray-500 py-8">No products available at the moment.</p>';
+    if (filteredProducts.length === 0) {
+        if (currentSearchQuery) {
+            container.innerHTML = `<p class="text-center text-gray-500 py-8">No products found for "${currentSearchQuery}". Try a different search term.</p>`;
+        } else {
+            container.innerHTML = '<p class="text-center text-gray-500 py-8">No products available at the moment.</p>';
+        }
         return;
     }
     
-    // Group products by category
-    const groupedProducts = allProducts.reduce((acc, product) => {
+    // Group filtered products by category
+    const groupedProducts = filteredProducts.reduce((acc, product) => {
         const category = product.category || 'Other';
         if (!acc[category]) {
             acc[category] = [];
@@ -537,6 +548,9 @@ function renderProductsList() {
             });
         });
     }, 100);
+    
+    // Update search results count
+    updateSearchResultsCount();
 }
 
 function createProductQuoteItem(product) {
@@ -590,6 +604,57 @@ function createProductQuoteItem(product) {
             </div>
         </div>
     `;
+}
+
+function filterProducts(searchQuery) {
+    currentSearchQuery = searchQuery.toLowerCase().trim();
+    
+    if (!currentSearchQuery) {
+        filteredProducts = [...allProducts];
+    } else {
+        filteredProducts = allProducts.filter(product => {
+            const name = (product.name || '').toLowerCase();
+            const description = (product.description || '').toLowerCase();
+            const category = (product.category || '').toLowerCase();
+            
+            return name.includes(currentSearchQuery) || 
+                   description.includes(currentSearchQuery) || 
+                   category.includes(currentSearchQuery);
+        });
+    }
+    
+    renderProductsList();
+}
+
+function updateSearchResultsCount() {
+    const resultsCountElement = document.getElementById('searchResultsCount');
+    
+    if (!resultsCountElement) return;
+    
+    if (currentSearchQuery) {
+        const totalProducts = allProducts.length;
+        const filteredCount = filteredProducts.length;
+        
+        resultsCountElement.textContent = `Showing ${filteredCount} of ${totalProducts} products`;
+        resultsCountElement.classList.remove('hidden');
+    } else {
+        resultsCountElement.classList.add('hidden');
+    }
+}
+
+function clearSearch() {
+    const searchInput = document.getElementById('productSearchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    if (clearBtn) {
+        clearBtn.classList.add('hidden');
+    }
+    
+    filterProducts('');
 }
 
 function updateSelectedProducts(productId, isSelected) {
@@ -720,6 +785,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBookModalBtn = document.getElementById('closeBookModal');
     if (closeBookModalBtn) {
         closeBookModalBtn.addEventListener('click', closeBookServiceModal);
+    }
+    
+    // Search functionality event listeners
+    const searchInput = document.getElementById('productSearchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const query = e.target.value;
+                filterProducts(query);
+                
+                // Show/hide clear button
+                if (clearSearchBtn) {
+                    if (query.trim()) {
+                        clearSearchBtn.classList.remove('hidden');
+                    } else {
+                        clearSearchBtn.classList.add('hidden');
+                    }
+                }
+            }, 300); // Debounce search by 300ms
+        });
+    }
+    
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', clearSearch);
     }
     
     // Mobile menu toggle
