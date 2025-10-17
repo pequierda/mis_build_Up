@@ -14,12 +14,39 @@ function logout() {
     window.location.href = 'login.html';
 }
 
+// Auto-logout after 1 minute of inactivity
+let inactivityTimer;
+const INACTIVITY_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
+
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        alert('Session expired due to inactivity. You will be logged out.');
+        logout();
+    }, INACTIVITY_TIMEOUT);
+}
+
+// Track user activity
+function trackActivity() {
+    resetInactivityTimer();
+}
+
 // Add logout event listener when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', logout);
     }
+    
+    // Start inactivity timer
+    resetInactivityTimer();
+    
+    // Track mouse movement, clicks, and keyboard activity
+    document.addEventListener('mousemove', trackActivity);
+    document.addEventListener('mousedown', trackActivity);
+    document.addEventListener('keypress', trackActivity);
+    document.addEventListener('scroll', trackActivity);
+    document.addEventListener('touchstart', trackActivity);
 });
 
 function getAuthToken() {
