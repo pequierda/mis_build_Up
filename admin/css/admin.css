@@ -1,16 +1,25 @@
-.service-card-admin {
+/* ===== CARD ANIMATIONS ===== */
+.service-card-admin,
+.client-card,
+.product-card,
+.contact-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.service-card-admin:hover {
+.service-card-admin:hover,
+.client-card:hover,
+.product-card:hover,
+.contact-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== MODAL STYLES ===== */
 .modal-backdrop {
     backdrop-filter: blur(4px);
 }
 
+/* ===== IMAGE PREVIEW ===== */
 .image-preview-container {
     position: relative;
 }
@@ -20,6 +29,7 @@
     height: auto;
 }
 
+/* ===== BUTTON ANIMATIONS ===== */
 .delete-btn {
     transition: all 0.2s ease;
 }
@@ -28,6 +38,7 @@
     transform: scale(1.05);
 }
 
+/* ===== SLIDE ANIMATIONS ===== */
 @keyframes slideIn {
     from {
         opacity: 0;
@@ -43,7 +54,29 @@
     animation: slideIn 0.3s ease-out;
 }
 
+/* ===== GRADIENT BACKGROUNDS ===== */
 .gradient-bg-admin {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
+/* ===== RESPONSIVE UTILITIES ===== */
+@media (max-width: 640px) {
+    .service-card-admin,
+    .client-card,
+    .product-card,
+    .contact-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* ===== LOADING STATES ===== */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* ===== FOCUS STATES ===== */
+.focus-ring:focus {
+    outline: 2px solid #8b5cf6;
+    outline-offset: 2px;
+}

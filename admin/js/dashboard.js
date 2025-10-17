@@ -1,53 +1,14 @@
+// ===== GLOBAL VARIABLES =====
 let currentEditingService = null;
+let inactivityTimer;
+const INACTIVITY_TIMEOUT = 60 * 1000; // 1 minute
 
+// ===== UTILITY FUNCTIONS =====
 function generateServiceId() {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substr(2, 5);
     return `service_${timestamp}_${random}`;
 }
-
-// Logout functionality
-function logout() {
-    // Clear the auth token
-    localStorage.removeItem('admin_token');
-    // Redirect to login page
-    window.location.href = 'login.html';
-}
-
-// Auto-logout after 1 minute of inactivity
-let inactivityTimer;
-const INACTIVITY_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
-
-function resetInactivityTimer() {
-    clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(() => {
-        alert('Session expired due to inactivity. You will be logged out.');
-        logout();
-    }, INACTIVITY_TIMEOUT);
-}
-
-// Track user activity
-function trackActivity() {
-    resetInactivityTimer();
-}
-
-// Add logout event listener when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
-    
-    // Start inactivity timer
-    resetInactivityTimer();
-    
-    // Track mouse movement, clicks, and keyboard activity
-    document.addEventListener('mousemove', trackActivity);
-    document.addEventListener('mousedown', trackActivity);
-    document.addEventListener('keypress', trackActivity);
-    document.addEventListener('scroll', trackActivity);
-    document.addEventListener('touchstart', trackActivity);
-});
 
 function getAuthToken() {
     return localStorage.getItem('admin_token');
@@ -58,6 +19,19 @@ function getAuthHeaders() {
     return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
 
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 transition-opacity ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// ===== AUTHENTICATION =====
 async function checkAuth() {
     const token = getAuthToken();
     if (!token) {
@@ -82,11 +56,29 @@ async function checkAuth() {
     }
 }
 
+function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = 'login.html';
+}
+
+// ===== AUTO-LOGOUT FUNCTIONALITY =====
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        alert('Session expired due to inactivity. You will be logged out.');
+        logout();
+    }, INACTIVITY_TIMEOUT);
+}
+
+function trackActivity() {
+    resetInactivityTimer();
+}
+
+// ===== SERVICE MANAGEMENT =====
 async function loadServices() {
     try {
         const response = await fetch('../api/admin/services');
         const services = await response.json();
-        
         const container = document.getElementById('servicesContainer');
         
         if (!services || services.length === 0) {
@@ -96,25 +88,9 @@ async function loadServices() {
         
         container.innerHTML = services.map(service => createServiceCard(service)).join('');
         
-        // Add event listeners after a short delay to ensure DOM is ready
+        // Add event listeners after DOM update
         setTimeout(() => {
-            document.querySelectorAll('.edit-service-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const serviceId = btn.getAttribute('data-id');
-                    console.log('Edit button clicked for service:', serviceId);
-                    editService(serviceId);
-                });
-            });
-            
-            document.querySelectorAll('.delete-service-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const serviceId = btn.getAttribute('data-id');
-                    console.log('Delete button clicked for service:', serviceId);
-                    deleteService(serviceId);
-                });
-            });
+            attachServiceEventListeners();
         }, 100);
     } catch (error) {
         console.error('Error loading services:', error);
@@ -123,7 +99,6 @@ async function loadServices() {
 }
 
 function createServiceCard(service) {
-    // Ensure service has required properties
     const title = service.title || 'Untitled Service';
     const description = service.description || 'No description provided';
     const color = service.color || 'text-blue-600';
@@ -151,31 +126,26 @@ function createServiceCard(service) {
     `;
 }
 
-function openModal(title = 'Add New Service') {
-    document.getElementById('modalTitle').textContent = title;
-    document.getElementById('serviceModal').classList.remove('hidden');
+function attachServiceEventListeners() {
+    document.querySelectorAll('.edit-service-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const serviceId = btn.getAttribute('data-id');
+            editService(serviceId);
+        });
+    });
     
-    // Clear form and generate new ID for new services
-    if (title === 'Add New Service') {
-        document.getElementById('serviceForm').reset();
-        document.getElementById('serviceId').value = generateServiceId();
-        document.getElementById('imagePreview').classList.add('hidden');
-        currentEditingService = null;
-    }
-}
-
-function closeModal() {
-    document.getElementById('serviceModal').classList.add('hidden');
-    document.getElementById('serviceForm').reset();
-    document.getElementById('imagePreview').classList.add('hidden');
-    document.getElementById('serviceId').value = '';
-    currentEditingService = null;
+    document.querySelectorAll('.delete-service-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const serviceId = btn.getAttribute('data-id');
+            deleteService(serviceId);
+        });
+    });
 }
 
 async function editService(serviceId) {
     try {
-        console.log('Editing service with ID:', serviceId);
-        
         const response = await fetch('../api/admin/services', {
             headers: getAuthHeaders()
         });
@@ -185,10 +155,7 @@ async function editService(serviceId) {
         }
         
         const services = await response.json();
-        console.log('All services:', services);
-        
         const service = services.find(s => s.id === serviceId);
-        console.log('Found service:', service);
         
         if (!service) {
             showNotification('Service not found', 'error');
@@ -222,8 +189,6 @@ async function deleteService(serviceId) {
     if (!confirm('Are you sure you want to delete this service?')) return;
     
     try {
-        console.log('Deleting service with ID:', serviceId);
-        
         const response = await fetch('../api/admin/services', {
             method: 'DELETE',
             headers: { 
@@ -238,7 +203,6 @@ async function deleteService(serviceId) {
         }
         
         const result = await response.json();
-        console.log('Delete response:', result);
         
         if (result.success) {
             showNotification('Service deleted successfully', 'success');
@@ -252,26 +216,29 @@ async function deleteService(serviceId) {
     }
 }
 
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 transition-opacity ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
+// ===== MODAL MANAGEMENT =====
+function openModal(title = 'Add New Service') {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('serviceModal').classList.remove('hidden');
     
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
+    if (title === 'Add New Service') {
+        document.getElementById('serviceForm').reset();
+        document.getElementById('serviceId').value = generateServiceId();
+        document.getElementById('imagePreview').classList.add('hidden');
+        currentEditingService = null;
+    }
 }
 
-document.getElementById('addServiceBtn').addEventListener('click', () => {
-    openModal('Add New Service');
-});
+function closeModal() {
+    document.getElementById('serviceModal').classList.add('hidden');
+    document.getElementById('serviceForm').reset();
+    document.getElementById('imagePreview').classList.add('hidden');
+    document.getElementById('serviceId').value = '';
+    currentEditingService = null;
+}
 
-document.getElementById('closeModal').addEventListener('click', closeModal);
-document.getElementById('cancelBtn').addEventListener('click', closeModal);
-
-document.getElementById('imageUpload').addEventListener('change', (e) => {
+// ===== FORM HANDLING =====
+function handleImageUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
     
@@ -289,9 +256,9 @@ document.getElementById('imageUpload').addEventListener('change', (e) => {
         document.getElementById('imagePreview').classList.remove('hidden');
     };
     reader.readAsDataURL(file);
-});
+}
 
-document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+async function handleFormSubmit(e) {
     e.preventDefault();
     
     const formData = {
@@ -299,7 +266,7 @@ document.getElementById('serviceForm').addEventListener('submit', async (e) => {
         title: document.getElementById('serviceTitle').value.trim(),
         description: document.getElementById('serviceDescription').value.trim(),
         color: document.getElementById('serviceColor').value,
-        icon: 'logo/me.png', // Custom logo
+        icon: 'logo/me.png',
         image: document.getElementById('serviceImage').value.trim() || null
     };
     
@@ -314,11 +281,7 @@ document.getElementById('serviceForm').addEventListener('submit', async (e) => {
         return;
     }
     
-    // Icon is automatically set to default check circle
-    
     try {
-        console.log('Saving service:', formData);
-        
         const response = await fetch('../api/admin/services', {
             method: formData.id ? 'PUT' : 'POST',
             headers: { 
@@ -333,7 +296,6 @@ document.getElementById('serviceForm').addEventListener('submit', async (e) => {
         }
         
         const result = await response.json();
-        console.log('Save response:', result);
         
         if (result.success) {
             showNotification(formData.id ? 'Service updated successfully' : 'Service created successfully', 'success');
@@ -346,13 +308,37 @@ document.getElementById('serviceForm').addEventListener('submit', async (e) => {
         console.error('Error saving service:', error);
         showNotification('Failed to save service: ' + error.message, 'error');
     }
+}
+
+// ===== EVENT LISTENERS =====
+function initializeEventListeners() {
+    // Modal controls
+    document.getElementById('addServiceBtn').addEventListener('click', () => openModal('Add New Service'));
+    document.getElementById('closeModal').addEventListener('click', closeModal);
+    document.getElementById('cancelBtn').addEventListener('click', closeModal);
+    
+    // Form handling
+    document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
+    document.getElementById('serviceForm').addEventListener('submit', handleFormSubmit);
+    
+    // Logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+    
+    // Activity tracking for auto-logout
+    resetInactivityTimer();
+    document.addEventListener('mousemove', trackActivity);
+    document.addEventListener('mousedown', trackActivity);
+    document.addEventListener('keypress', trackActivity);
+    document.addEventListener('scroll', trackActivity);
+    document.addEventListener('touchstart', trackActivity);
+}
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEventListeners();
+    checkAuth();
+    loadServices();
 });
-
-document.getElementById('logoutBtn').addEventListener('click', () => {
-    localStorage.removeItem('admin_token');
-    window.location.href = 'login.html';
-});
-
-checkAuth();
-loadServices();
-

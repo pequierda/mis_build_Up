@@ -1,48 +1,9 @@
+// ===== GLOBAL VARIABLES =====
 let currentEditingClient = null;
-
-// Logout functionality
-function logout() {
-    // Clear the auth token
-    localStorage.removeItem('admin_token');
-    // Redirect to login page
-    window.location.href = 'login.html';
-}
-
-// Auto-logout after 1 minute of inactivity
 let inactivityTimer;
-const INACTIVITY_TIMEOUT = 60 * 1000; // 1 minute in milliseconds
+const INACTIVITY_TIMEOUT = 60 * 1000; // 1 minute
 
-function resetInactivityTimer() {
-    clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(() => {
-        alert('Session expired due to inactivity. You will be logged out.');
-        logout();
-    }, INACTIVITY_TIMEOUT);
-}
-
-// Track user activity
-function trackActivity() {
-    resetInactivityTimer();
-}
-
-// Add logout event listener when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
-    
-    // Start inactivity timer
-    resetInactivityTimer();
-    
-    // Track mouse movement, clicks, and keyboard activity
-    document.addEventListener('mousemove', trackActivity);
-    document.addEventListener('mousedown', trackActivity);
-    document.addEventListener('keypress', trackActivity);
-    document.addEventListener('scroll', trackActivity);
-    document.addEventListener('touchstart', trackActivity);
-});
-
+// ===== UTILITY FUNCTIONS =====
 function getAuthToken() {
     return localStorage.getItem('admin_token');
 }
@@ -52,6 +13,19 @@ function getAuthHeaders() {
     return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
 
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 transition-opacity ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// ===== AUTHENTICATION =====
 async function checkAuth() {
     const token = getAuthToken();
     if (!token) {
@@ -76,6 +50,25 @@ async function checkAuth() {
     }
 }
 
+function logout() {
+    localStorage.removeItem('admin_token');
+    window.location.href = 'login.html';
+}
+
+// ===== AUTO-LOGOUT FUNCTIONALITY =====
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        alert('Session expired due to inactivity. You will be logged out.');
+        logout();
+    }, INACTIVITY_TIMEOUT);
+}
+
+function trackActivity() {
+    resetInactivityTimer();
+}
+
+// ===== CLIENT MANAGEMENT =====
 async function loadClients() {
     try {
         const response = await fetch('../api/clients', {
@@ -104,23 +97,9 @@ function renderClientCards(clients) {
     
     container.innerHTML = clients.map(client => createClientCard(client)).join('');
     
-    // Add event listeners
+    // Add event listeners after DOM update
     setTimeout(() => {
-        document.querySelectorAll('.edit-client-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const clientId = btn.getAttribute('data-id');
-                editClient(clientId, clients);
-            });
-        });
-        
-        document.querySelectorAll('.delete-client-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const clientId = btn.getAttribute('data-id');
-                deleteClient(clientId);
-            });
-        });
+        attachClientEventListeners();
     }, 100);
 }
 
@@ -151,53 +130,68 @@ function createClientCard(client) {
     `;
 }
 
-function openModal(title = 'Add New Client') {
-    document.getElementById('modalTitle').textContent = title;
-    document.getElementById('clientModal').classList.remove('hidden');
-    
-    // Clear form for new clients
-    if (title === 'Add New Client') {
-        document.getElementById('clientForm').reset();
-        currentEditingClient = null;
-    }
-}
-
-function closeModal() {
-    document.getElementById('clientModal').classList.add('hidden');
-    document.getElementById('clientForm').reset();
-    document.getElementById('clientId').value = '';
-    currentEditingClient = null;
-}
-
-function editClient(clientId, clients) {
-    const client = clients.find(c => c.id === clientId);
-    if (!client) {
-        showNotification('Client not found', 'error');
-        return;
-    }
-    
-    currentEditingClient = client;
-    
-    // Populate form
-    document.getElementById('clientId').value = client.id;
-    document.getElementById('clientName').value = client.name || '';
-    document.getElementById('clientCompany').value = client.company || '';
-    document.getElementById('clientTestimonial').value = client.testimonial || '';
-    
-    // Handle images
-    const imagesContainer = document.getElementById('imagesContainer');
-    imagesContainer.innerHTML = '';
-    
-    const images = client.images || (client.image ? [client.image] : []);
-    images.forEach(image => {
-        addImageInput(image);
+function attachClientEventListeners() {
+    document.querySelectorAll('.edit-client-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const clientId = btn.getAttribute('data-id');
+            editClient(clientId);
+        });
     });
     
-    if (images.length === 0) {
-        addImageInput();
+    document.querySelectorAll('.delete-client-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const clientId = btn.getAttribute('data-id');
+            deleteClient(clientId);
+        });
+    });
+}
+
+async function editClient(clientId) {
+    try {
+        const response = await fetch('../api/clients', {
+            headers: getAuthHeaders()
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const clients = await response.json();
+        const client = clients.find(c => c.id === clientId);
+        
+        if (!client) {
+            showNotification('Client not found', 'error');
+            return;
+        }
+        
+        currentEditingClient = client;
+        
+        // Populate form
+        document.getElementById('clientId').value = client.id;
+        document.getElementById('clientName').value = client.name || '';
+        document.getElementById('clientCompany').value = client.company || '';
+        document.getElementById('clientTestimonial').value = client.testimonial || '';
+        
+        // Handle images
+        const imagesContainer = document.getElementById('imagesContainer');
+        imagesContainer.innerHTML = '';
+        
+        const images = client.images || (client.image ? [client.image] : []);
+        images.forEach(image => {
+            addImageInput(image);
+        });
+        
+        if (images.length === 0) {
+            addImageInput();
+        }
+        
+        openModal('Edit Client');
+    } catch (error) {
+        console.error('Error loading client:', error);
+        showNotification('Failed to load client: ' + error.message, 'error');
     }
-    
-    openModal('Edit Client');
 }
 
 async function deleteClient(clientId) {
@@ -231,109 +225,36 @@ async function deleteClient(clientId) {
     }
 }
 
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 transition-opacity ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
+// ===== MODAL MANAGEMENT =====
+function openModal(title = 'Add New Client') {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('clientModal').classList.remove('hidden');
     
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
+    if (title === 'Add New Client') {
+        document.getElementById('clientForm').reset();
+        currentEditingClient = null;
+    }
 }
 
-// Event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    checkAuth();
-    loadClients();
-    
-    // Add client button
-    document.getElementById('addClientBtn').addEventListener('click', () => {
-        openModal('Add New Client');
-    });
-    
-    // Modal controls
-    document.getElementById('closeModal').addEventListener('click', closeModal);
-    document.getElementById('cancelBtn').addEventListener('click', closeModal);
-    
-    // Client form submission
-    document.getElementById('clientForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        // Collect images
-        const imageInputs = document.querySelectorAll('input[name="image"]');
-        const images = Array.from(imageInputs)
-            .map(input => input.value.trim())
-            .filter(url => url.length > 0);
-        
-        const formData = {
-            id: document.getElementById('clientId').value || undefined,
-            name: document.getElementById('clientName').value.trim(),
-            company: document.getElementById('clientCompany').value.trim() || '',
-            testimonial: document.getElementById('clientTestimonial').value.trim() || '',
-            images: images
-        };
-        
-        // Validate required fields
-        if (!formData.name) {
-            showNotification('Client name is required', 'error');
-            return;
-        }
-        
-        if (!formData.images || formData.images.length === 0) {
-            showNotification('At least one client image is required', 'error');
-            return;
-        }
-        
-        try {
-            const response = await fetch('../api/clients', {
-                method: formData.id ? 'PUT' : 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    ...getAuthHeaders()
-                },
-                body: JSON.stringify(formData)
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                showNotification(formData.id ? 'Client updated successfully' : 'Client added successfully', 'success');
-                closeModal();
-                loadClients();
-            } else {
-                showNotification(result.message || 'Failed to save client', 'error');
-            }
-        } catch (error) {
-            console.error('Error saving client:', error);
-            showNotification('Failed to save client: ' + error.message, 'error');
-        }
-    });
-    
-    // Logout button
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.removeItem('admin_token');
-        window.location.href = 'login.html';
-    });
-});
+function closeModal() {
+    document.getElementById('clientModal').classList.add('hidden');
+    document.getElementById('clientForm').reset();
+    document.getElementById('clientId').value = '';
+    currentEditingClient = null;
+}
 
-// Image input management functions
+// ===== IMAGE MANAGEMENT =====
 function addImageInput(value = '') {
     const container = document.getElementById('imagesContainer');
     const div = document.createElement('div');
     div.className = 'flex gap-2 mb-2';
     div.innerHTML = `
         <input type="url" name="image" ${value ? '' : 'required'}
-            class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
             placeholder="https://example.com/client-image.jpg"
             value="${value}">
-        <button type="button" onclick="removeImageInput(this)" class="px-3 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button type="button" onclick="removeImageInput(this)" class="px-2 sm:px-3 py-2 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
         </button>
@@ -345,7 +266,6 @@ function removeImageInput(button) {
     const container = document.getElementById('imagesContainer');
     const inputs = container.querySelectorAll('input[name="image"]');
     
-    // Don't allow removing the last input if it's the only one
     if (inputs.length <= 1) {
         showNotification('At least one image is required', 'error');
         return;
@@ -353,3 +273,93 @@ function removeImageInput(button) {
     
     button.parentElement.remove();
 }
+
+// ===== FORM HANDLING =====
+async function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    // Collect images
+    const imageInputs = document.querySelectorAll('input[name="image"]');
+    const images = Array.from(imageInputs)
+        .map(input => input.value.trim())
+        .filter(url => url.length > 0);
+    
+    const formData = {
+        id: document.getElementById('clientId').value || undefined,
+        name: document.getElementById('clientName').value.trim(),
+        company: document.getElementById('clientCompany').value.trim() || '',
+        testimonial: document.getElementById('clientTestimonial').value.trim() || '',
+        images: images
+    };
+    
+    // Validate required fields
+    if (!formData.name) {
+        showNotification('Client name is required', 'error');
+        return;
+    }
+    
+    if (!formData.images || formData.images.length === 0) {
+        showNotification('At least one client image is required', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('../api/clients', {
+            method: formData.id ? 'PUT' : 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                ...getAuthHeaders()
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(formData.id ? 'Client updated successfully' : 'Client added successfully', 'success');
+            closeModal();
+            loadClients();
+        } else {
+            showNotification(result.message || 'Failed to save client', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving client:', error);
+        showNotification('Failed to save client: ' + error.message, 'error');
+    }
+}
+
+// ===== EVENT LISTENERS =====
+function initializeEventListeners() {
+    // Modal controls
+    document.getElementById('addClientBtn').addEventListener('click', () => openModal('Add New Client'));
+    document.getElementById('closeModal').addEventListener('click', closeModal);
+    document.getElementById('cancelBtn').addEventListener('click', closeModal);
+    
+    // Form handling
+    document.getElementById('clientForm').addEventListener('submit', handleFormSubmit);
+    
+    // Logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+    
+    // Activity tracking for auto-logout
+    resetInactivityTimer();
+    document.addEventListener('mousemove', trackActivity);
+    document.addEventListener('mousedown', trackActivity);
+    document.addEventListener('keypress', trackActivity);
+    document.addEventListener('scroll', trackActivity);
+    document.addEventListener('touchstart', trackActivity);
+}
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEventListeners();
+    checkAuth();
+    loadClients();
+});
