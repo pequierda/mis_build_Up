@@ -6,6 +6,22 @@ function generateServiceId() {
     return `service_${timestamp}_${random}`;
 }
 
+// Logout functionality
+function logout() {
+    // Clear the auth token
+    localStorage.removeItem('admin_token');
+    // Redirect to login page
+    window.location.href = 'login.html';
+}
+
+// Add logout event listener when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+});
+
 function getAuthToken() {
     return localStorage.getItem('admin_token');
 }
