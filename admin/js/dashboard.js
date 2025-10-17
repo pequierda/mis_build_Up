@@ -57,6 +57,7 @@ async function checkAuth() {
 }
 
 function logout() {
+    console.log('Logout function called'); // Debug log
     localStorage.removeItem('admin_token');
     window.location.href = 'login.html';
 }
@@ -321,10 +322,17 @@ function initializeEventListeners() {
     document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
     document.getElementById('serviceForm').addEventListener('submit', handleFormSubmit);
     
-    // Logout button
+    // Logout button - ensure it works properly
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
+        // Remove any existing event listeners first
+        logoutBtn.onclick = null;
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Logout button clicked'); // Debug log
+            logout();
+        });
     }
     
     // Activity tracking for auto-logout
@@ -338,7 +346,23 @@ function initializeEventListeners() {
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard DOM loaded'); // Debug log
     initializeEventListeners();
     checkAuth();
     loadServices();
 });
+
+// Also try to initialize if DOM is already loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Dashboard DOM loaded (fallback)'); // Debug log
+        initializeEventListeners();
+        checkAuth();
+        loadServices();
+    });
+} else {
+    console.log('Dashboard DOM already loaded'); // Debug log
+    initializeEventListeners();
+    checkAuth();
+    loadServices();
+}
