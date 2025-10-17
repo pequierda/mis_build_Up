@@ -62,6 +62,9 @@ function logout() {
     window.location.href = 'login.html';
 }
 
+// Make logout function globally accessible
+window.logout = logout;
+
 // ===== AUTO-LOGOUT FUNCTIONALITY =====
 function resetInactivityTimer() {
     clearTimeout(inactivityTimer);
@@ -325,14 +328,25 @@ function initializeEventListeners() {
     // Logout button - ensure it works properly
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
+        console.log('Logout button found:', logoutBtn); // Debug log
         // Remove any existing event listeners first
         logoutBtn.onclick = null;
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Logout button clicked'); // Debug log
+            console.log('Logout button clicked via event listener'); // Debug log
             logout();
         });
+        
+        // Also add onclick as backup
+        logoutBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Logout button clicked via onclick'); // Debug log
+            logout();
+        };
+    } else {
+        console.log('Logout button not found!'); // Debug log
     }
     
     // Activity tracking for auto-logout
