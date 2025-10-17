@@ -19,7 +19,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         }
         
         const responseText = await response.text();
-        console.log('Response text:', responseText); // Debug log
+       // console.log('Response text:', responseText); // Debug log
         
         if (!responseText.trim()) {
             throw new Error('Empty response from server');
