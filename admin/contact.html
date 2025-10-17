@@ -13,55 +13,56 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center">
-                    <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-8 h-8 sm:w-10 sm:h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
-                    <span class="ml-3 text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">Contact Management</span>
+                    <span class="ml-2 sm:ml-3 text-lg sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">Contact Management</span>
                 </div>
-                <div class="flex items-center gap-4">
-                    <a href="dashboard.html" class="text-gray-700 hover:text-purple-600 font-medium transition">Back to Dashboard</a>
-                    <a href="../index.html" target="_blank" class="text-gray-700 hover:text-purple-600 font-medium transition">View Site</a>
-                    <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition">Logout</button>
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <a href="dashboard.html" class="text-gray-700 hover:text-purple-600 font-medium transition text-sm sm:text-base hidden sm:block">Back to Dashboard</a>
+                    <a href="../index.html" target="_blank" class="text-gray-700 hover:text-purple-600 font-medium transition text-sm sm:text-base hidden sm:block">View Site</a>
+                    <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-3 sm:px-6 py-2 rounded-lg font-medium transition text-sm sm:text-base">Logout</button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Manage Contact Information</h1>
-            <button id="addContactBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 gap-4">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Manage Contact Information</h1>
+            <button id="addContactBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 text-sm sm:text-base">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
-                Add New Contact
+                <span class="hidden sm:inline">Add New Contact</span>
+                <span class="sm:hidden">Add Contact</span>
             </button>
         </div>
 
-        <div id="contactsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div id="contactsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             <!-- Contact information will be loaded here -->
         </div>
     </div>
 
     <!-- Add/Edit Contact Modal -->
-    <div id="contactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-                <h2 id="modalTitle" class="text-2xl font-bold text-gray-900">Add New Contact</h2>
+    <div id="contactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+                <h2 id="modalTitle" class="text-xl sm:text-2xl font-bold text-gray-900">Add New Contact</h2>
                 <button id="closeModal" class="text-gray-500 hover:text-gray-700 transition">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
 
-            <form id="contactForm" class="p-6 space-y-6">
+            <form id="contactForm" class="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <input type="hidden" id="contactId">
                 
                 <div>
                     <label for="contactType" class="block text-sm font-medium text-gray-700 mb-2">Contact Type *</label>
                     <select id="contactType" name="type" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base">
                         <option value="">Select Type</option>
                         <option value="phone">Phone</option>
                         <option value="email">Email</option>
@@ -75,21 +76,21 @@
                 <div>
                     <label for="contactLabel" class="block text-sm font-medium text-gray-700 mb-2">Label *</label>
                     <input type="text" id="contactLabel" name="label" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                         placeholder="e.g., Main Phone, Office Address">
                 </div>
                 
                 <div>
                     <label for="contactValue" class="block text-sm font-medium text-gray-700 mb-2">Value *</label>
                     <input type="text" id="contactValue" name="value" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                         placeholder="e.g., +63 912 345 6789, info@company.com">
                 </div>
                 
                 <div>
                     <label for="contactIcon" class="block text-sm font-medium text-gray-700 mb-2">Icon</label>
                     <select id="contactIcon" name="icon"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base">
                         <option value="">Select Icon</option>
                         <option value="phone">📞 Phone</option>
                         <option value="email">📧 Email</option>
@@ -105,7 +106,7 @@
                 <div>
                     <label for="contactOrder" class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
                     <input type="number" id="contactOrder" name="order" min="0"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        class="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm sm:text-base"
                         placeholder="0" value="0">
                 </div>
                 
@@ -117,11 +118,11 @@
                     </label>
                 </div>
                 
-                <div class="flex gap-4 pt-4">
-                    <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition">
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 sm:py-3 rounded-lg transition text-sm sm:text-base">
                         Save Contact
                     </button>
-                    <button type="button" id="cancelBtn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-lg transition">
+                    <button type="button" id="cancelBtn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 sm:py-3 rounded-lg transition text-sm sm:text-base">
                         Cancel
                     </button>
                 </div>
