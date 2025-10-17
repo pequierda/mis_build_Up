@@ -57,7 +57,7 @@ async function checkAuth() {
 }
 
 function logout() {
-    console.log('Logout function called'); // Debug log
+   // console.log('Logout function called'); // Debug log
     localStorage.removeItem('admin_token');
     window.location.href = 'login.html';
 }
