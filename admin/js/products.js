@@ -133,7 +133,7 @@ function createProductCard(car, bookings) {
                 ${car.description ? `<p class="text-gray-500 text-xs mb-2">${car.description.substring(0, 80)}...</p>` : ''}
                 <div class="flex items-center justify-center mt-2">
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${car.available === false ? 'bg-red-100 text-red-800' : (car.onBooking === true ? 'bg-orange-100 text-orange-800' : (isBooked ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'))}">
-                        ${car.available === false ? 'Not Available' : (car.onBooking === true ? 'On Booking' : (isBooked ? 'Booked' : 'Available'))}
+                        ${car.available === false ? 'Not Available' : (car.onBooking === true ? 'On Booking' : (isBooked ? 'Pending' : 'Available'))}
                     </span>
                 </div>
             </div>
@@ -594,7 +594,7 @@ async function showBookingsForCar(carId) {
 }
 
 function showBookingsListModal(car, bookings) {
-    const modal = document.getElementById('bookingsListModal');
+    let modal = document.getElementById('bookingsListModal');
     if (!modal) {
         // Create modal if it doesn't exist
         const modalHTML = `
@@ -616,10 +616,24 @@ function showBookingsListModal(car, bookings) {
         `;
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         
+        // Get the modal after creating it
+        modal = document.getElementById('bookingsListModal');
+        
         // Add event listener for close button
-        document.getElementById('closeBookingsListModal').addEventListener('click', () => {
-            document.getElementById('bookingsListModal').classList.add('hidden');
-        });
+        const closeBtn = document.getElementById('closeBookingsListModal');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                if (modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
+    }
+    
+    // Update modal title with car name
+    const modalTitle = modal.querySelector('h2');
+    if (modalTitle) {
+        modalTitle.textContent = `Bookings for ${car.name}`;
     }
     
     // Sort bookings by start date (most recent first)
@@ -660,19 +674,26 @@ function showBookingsListModal(car, bookings) {
         `;
     }).join('');
     
-    document.getElementById('bookingsListContent').innerHTML = bookingsHTML || '<p class="text-gray-500 text-center py-8">No bookings found</p>';
+    const bookingsListContent = document.getElementById('bookingsListContent');
+    if (bookingsListContent) {
+        bookingsListContent.innerHTML = bookingsHTML || '<p class="text-gray-500 text-center py-8">No bookings found</p>';
+    }
     
     // Attach event listeners to edit buttons
     document.querySelectorAll('.edit-booking-from-list-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             const bookingId = btn.getAttribute('data-booking-id');
-            document.getElementById('bookingsListModal').classList.add('hidden');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
             editBooking(bookingId);
         });
     });
     
-    modal.classList.remove('hidden');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
 }
 
 async function editBooking(bookingId) {
