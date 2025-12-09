@@ -364,27 +364,46 @@ let allBookings = [];
 let allCars = [];
 
 async function loadCalendarData() {
+    const container = document.getElementById('calendarContainer');
+    if (!container) {
+        console.error('Calendar container not found');
+        return;
+    }
+    
+    container.innerHTML = '<div class="col-span-7 text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div><p class="text-gray-500">Loading calendar...</p></div>';
+    
     try {
         const [bookingsResponse, carsResponse] = await Promise.all([
-            fetch('../api/bookings', {
-                headers: getAuthHeaders()
-            }),
+            fetch('../api/bookings'),
             fetch('../api/products', {
                 headers: getAuthHeaders()
             })
         ]);
         
         if (bookingsResponse.ok) {
-            allBookings = await bookingsResponse.json();
+            const bookingsData = await bookingsResponse.json();
+            allBookings = Array.isArray(bookingsData) ? bookingsData : [];
+            console.log('Loaded bookings:', allBookings.length, allBookings);
+        } else {
+            const errorText = await bookingsResponse.text();
+            console.error('Failed to load bookings:', bookingsResponse.status, errorText);
+            allBookings = [];
         }
         
         if (carsResponse.ok) {
-            allCars = await carsResponse.json();
+            const carsData = await carsResponse.json();
+            allCars = Array.isArray(carsData) ? carsData : [];
+            console.log('Loaded cars:', allCars.length, allCars);
+        } else {
+            const errorText = await carsResponse.text();
+            console.error('Failed to load cars:', carsResponse.status, errorText);
+            allCars = [];
         }
         
         renderCalendar();
     } catch (error) {
         console.error('Error loading calendar data:', error);
+        container.innerHTML = '<div class="col-span-7 text-center py-8 text-red-500"><p>Failed to load calendar data. Please refresh the page.</p><p class="text-xs mt-2">' + error.message + '</p></div>';
         showNotification('Failed to load calendar data', 'error');
     }
 }
@@ -392,6 +411,16 @@ async function loadCalendarData() {
 function renderCalendar() {
     const container = document.getElementById('calendarContainer');
     const monthYear = document.getElementById('currentMonthYear');
+    
+    if (!container) {
+        console.error('Calendar container not found');
+        return;
+    }
+    
+    if (!monthYear) {
+        console.error('Month year element not found');
+        return;
+    }
     
     const year = currentCalendarDate.getFullYear();
     const month = currentCalendarDate.getMonth();
@@ -404,7 +433,8 @@ function renderCalendar() {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const daysInPrevMonth = new Date(year, month, 0).getDate();
     
-    const activeBookings = allBookings.filter(b => b.status !== 'cancelled');
+    const activeBookings = (allBookings || []).filter(b => b.status !== 'cancelled');
+    console.log('Active bookings for calendar:', activeBookings.length);
     
     let calendarHTML = `
         <div class="grid grid-cols-7 gap-1">
@@ -435,8 +465,12 @@ function renderCalendar() {
         const isToday = isCurrentMonth && day === today.getDate();
         
         const dayBookings = activeBookings.filter(b => {
+            if (!b.startDate || !b.endDate) return false;
             const start = new Date(b.startDate);
             const end = new Date(b.endDate);
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+            date.setHours(0, 0, 0, 0);
             return date >= start && date <= end;
         });
         
@@ -529,6 +563,13 @@ function renderCalendar() {
     
     calendarHTML += '</div>';
     container.innerHTML = calendarHTML;
+    
+    if (activeBookings.length === 0) {
+        const noBookingsMsg = document.createElement('div');
+        noBookingsMsg.className = 'mt-4 text-center text-gray-500 text-sm';
+        noBookingsMsg.textContent = 'No bookings found for this month.';
+        container.appendChild(noBookingsMsg);
+    }
 }
 
 
