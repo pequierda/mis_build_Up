@@ -142,7 +142,10 @@ function createProductCard(car, bookings) {
             
             <div class="flex gap-2 mt-4">
                 <button class="edit-product-btn flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition" data-id="${car.id}">
-                    Edit
+                    Edit Car
+                </button>
+                <button class="edit-dates-btn flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition" data-id="${car.id}">
+                    Edit Dates
                 </button>
                 <button class="delete-product-btn bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition" data-id="${car.id}">
                     Delete
@@ -288,6 +291,14 @@ function attachProductEventListeners() {
             e.preventDefault();
             const productId = btn.getAttribute('data-id');
             editProduct(productId);
+        });
+    });
+    
+    document.querySelectorAll('.edit-dates-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const carId = btn.getAttribute('data-id');
+            showBookingsForCar(carId);
         });
     });
     
@@ -542,6 +553,127 @@ async function handleFormSubmit(e) {
 
 // ===== BOOKING MANAGEMENT =====
 let allBookings = [];
+
+async function showBookingsForCar(carId) {
+    try {
+        const [carsResponse, bookingsResponse] = await Promise.all([
+            fetch('../api/products', {
+                headers: getAuthHeaders()
+            }),
+            fetch('../api/bookings', {
+                headers: getAuthHeaders()
+            })
+        ]);
+        
+        if (!carsResponse.ok || !bookingsResponse.ok) {
+            throw new Error('Failed to fetch data');
+        }
+        
+        const cars = await carsResponse.json();
+        const allBookings = await bookingsResponse.json();
+        
+        const car = cars.find(c => c.id === carId);
+        if (!car) {
+            showNotification('Car not found', 'error');
+            return;
+        }
+        
+        const carBookings = allBookings.filter(b => b.carId === carId && b.status !== 'cancelled');
+        
+        if (carBookings.length === 0) {
+            showNotification('No bookings found for this car', 'error');
+            return;
+        }
+        
+        // Create and show bookings list modal
+        showBookingsListModal(car, carBookings);
+    } catch (error) {
+        console.error('Error loading bookings:', error);
+        showNotification('Failed to load bookings: ' + error.message, 'error');
+    }
+}
+
+function showBookingsListModal(car, bookings) {
+    const modal = document.getElementById('bookingsListModal');
+    if (!modal) {
+        // Create modal if it doesn't exist
+        const modalHTML = `
+            <div id="bookingsListModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
+                <div class="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Bookings for ${car.name}</h2>
+                        <button id="closeBookingsListModal" class="text-gray-500 hover:text-gray-700 transition">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="bookingsListContent" class="p-4 sm:p-6">
+                        <!-- Bookings will be listed here -->
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Add event listener for close button
+        document.getElementById('closeBookingsListModal').addEventListener('click', () => {
+            document.getElementById('bookingsListModal').classList.add('hidden');
+        });
+    }
+    
+    // Sort bookings by start date (most recent first)
+    const sortedBookings = bookings.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+    
+    const bookingsHTML = sortedBookings.map(booking => {
+        const start = new Date(booking.startDate);
+        const end = new Date(booking.endDate);
+        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        const isPast = end < new Date();
+        
+        return `
+            <div class="border border-gray-200 rounded-lg p-4 mb-4 hover:shadow-md transition ${isPast ? 'bg-gray-50 opacity-75' : 'bg-white'}">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="font-semibold text-gray-900">${booking.customerName || 'Customer'}</h3>
+                            <span class="px-2 py-1 rounded-full text-xs font-medium ${
+                                booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                booking.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                                booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                            }">${booking.status || 'pending'}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-1"><strong>Email:</strong> ${booking.customerEmail || 'N/A'}</p>
+                        <p class="text-sm text-gray-600 mb-1"><strong>Phone:</strong> ${booking.customerPhone || 'N/A'}</p>
+                        <p class="text-sm text-gray-700 mb-1">
+                            <strong>Dates:</strong> ${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                        <p class="text-sm text-gray-700 mb-1"><strong>Duration:</strong> ${days} day${days !== 1 ? 's' : ''}</p>
+                        <p class="text-sm text-gray-700"><strong>Total:</strong> ${booking.totalPrice || 'N/A'}</p>
+                    </div>
+                    <button class="edit-booking-from-list-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" data-booking-id="${booking.id}">
+                        Edit Dates
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    document.getElementById('bookingsListContent').innerHTML = bookingsHTML || '<p class="text-gray-500 text-center py-8">No bookings found</p>';
+    
+    // Attach event listeners to edit buttons
+    document.querySelectorAll('.edit-booking-from-list-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const bookingId = btn.getAttribute('data-booking-id');
+            document.getElementById('bookingsListModal').classList.add('hidden');
+            editBooking(bookingId);
+        });
+    });
+    
+    modal.classList.remove('hidden');
+}
 
 async function editBooking(bookingId) {
     try {
