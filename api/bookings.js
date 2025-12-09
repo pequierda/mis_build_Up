@@ -101,7 +101,7 @@ export default async function handler(req, res) {
         }
 
         if (req.method === 'PUT') {
-            const { id, status } = req.body;
+            const { id, status, startDate, endDate, customerName, customerEmail, customerPhone, totalPrice } = req.body;
 
             if (!id) {
                 return res.status(400).json({
@@ -124,9 +124,59 @@ export default async function handler(req, res) {
                 });
             }
 
+            const originalBooking = bookings[index];
+            const updatedBooking = { ...originalBooking };
+
             if (status) {
-                bookings[index].status = status;
+                updatedBooking.status = status;
             }
+
+            if (startDate || endDate) {
+                const newStartDate = startDate || originalBooking.startDate;
+                const newEndDate = endDate || originalBooking.endDate;
+                
+                const start = new Date(newStartDate);
+                const end = new Date(newEndDate);
+                
+                if (end <= start) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'End date must be after start date'
+                    });
+                }
+
+                updatedBooking.startDate = newStartDate;
+                updatedBooking.endDate = newEndDate;
+
+                const conflictingBookings = bookings.filter(b => 
+                    b.id !== id &&
+                    b.carId === originalBooking.carId && 
+                    b.status !== 'cancelled' &&
+                    ((new Date(b.startDate) <= end && new Date(b.endDate) >= start))
+                );
+
+                if (conflictingBookings.length > 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Car is already booked for the selected dates'
+                    });
+                }
+            }
+
+            if (customerName !== undefined) {
+                updatedBooking.customerName = customerName;
+            }
+            if (customerEmail !== undefined) {
+                updatedBooking.customerEmail = customerEmail;
+            }
+            if (customerPhone !== undefined) {
+                updatedBooking.customerPhone = customerPhone;
+            }
+            if (totalPrice !== undefined) {
+                updatedBooking.totalPrice = totalPrice;
+            }
+
+            bookings[index] = updatedBooking;
 
             await fetch(`${UPSTASH_URL}/set/bookings_list/${encodeURIComponent(JSON.stringify(bookings))}`, {
                 method: 'POST',
@@ -138,7 +188,7 @@ export default async function handler(req, res) {
             return res.status(200).json({
                 success: true,
                 message: 'Booking updated successfully',
-                booking: bookings[index]
+                booking: updatedBooking
             });
         }
 

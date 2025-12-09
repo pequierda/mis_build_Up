@@ -240,7 +240,7 @@ function generateCarCalendar(car, bookings) {
                         const displayName = customerName.length > 10 ? customerName.substring(0, 10) + '...' : customerName;
                         const dateRange = `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
                         
-                        return `<div class="${barClass} text-white text-[9px] px-1 py-0.5 rounded truncate" title="${customerName} (${dateRange})">${isStart ? displayName : ''}</div>`;
+                        return `<div class="edit-booking-btn ${barClass} text-white text-[9px] px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80 transition" title="${customerName} (${dateRange})" data-booking-id="${booking.id}">${isStart ? displayName : ''}</div>`;
                     }).join('')}
                     ${cell.dayBookings.length > 2 ? `<div class="text-[9px] text-gray-600 bg-gray-200 px-1 py-0.5 rounded">+${cell.dayBookings.length - 2}</div>` : ''}
                 </div>
@@ -269,7 +269,7 @@ function generateCarCalendar(car, bookings) {
                         const end = new Date(booking.endDate);
                         const customerName = booking.customerName || 'Customer';
                         return `
-                            <div class="text-[10px] text-gray-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-200">
+                            <div class="edit-booking-btn text-[10px] text-gray-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-200 cursor-pointer hover:bg-yellow-100 transition" data-booking-id="${booking.id}">
                                 <span class="font-semibold">${customerName}:</span> ${start.toLocaleDateString()} - ${end.toLocaleDateString()}
                             </div>
                         `;
@@ -296,6 +296,15 @@ function attachProductEventListeners() {
             e.preventDefault();
             const productId = btn.getAttribute('data-id');
             deleteProduct(productId);
+        });
+    });
+    
+    document.querySelectorAll('.edit-booking-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const bookingId = btn.getAttribute('data-booking-id');
+            editBooking(bookingId);
         });
     });
 }
@@ -531,6 +540,153 @@ async function handleFormSubmit(e) {
     }
 }
 
+// ===== BOOKING MANAGEMENT =====
+let allBookings = [];
+
+async function editBooking(bookingId) {
+    try {
+        const response = await fetch('../api/bookings', {
+            headers: getAuthHeaders()
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const bookings = await response.json();
+        const booking = bookings.find(b => b.id === bookingId);
+        
+        if (!booking) {
+            showNotification('Booking not found', 'error');
+            return;
+        }
+        
+        document.getElementById('editBookingId').value = booking.id;
+        document.getElementById('editBookingCarId').value = booking.carId;
+        document.getElementById('editCustomerName').value = booking.customerName || '';
+        document.getElementById('editCustomerEmail').value = booking.customerEmail || '';
+        document.getElementById('editCustomerPhone').value = booking.customerPhone || '';
+        
+        const startDate = new Date(booking.startDate);
+        const endDate = new Date(booking.endDate);
+        document.getElementById('editStartDate').value = startDate.toISOString().split('T')[0];
+        document.getElementById('editEndDate').value = endDate.toISOString().split('T')[0];
+        document.getElementById('editEndDate').min = startDate.toISOString().split('T')[0];
+        
+        document.getElementById('editTotalPrice').value = booking.totalPrice || '';
+        document.getElementById('editBookingStatus').value = booking.status || 'pending';
+        
+        document.getElementById('editBookingModal').classList.remove('hidden');
+    } catch (error) {
+        console.error('Error loading booking:', error);
+        showNotification('Failed to load booking: ' + error.message, 'error');
+    }
+}
+
+function closeBookingModal() {
+    document.getElementById('editBookingModal').classList.add('hidden');
+    document.getElementById('editBookingForm').reset();
+}
+
+async function handleBookingFormSubmit(e) {
+    e.preventDefault();
+    
+    const bookingId = document.getElementById('editBookingId').value;
+    const carId = document.getElementById('editBookingCarId').value;
+    const customerName = document.getElementById('editCustomerName').value.trim();
+    const customerEmail = document.getElementById('editCustomerEmail').value.trim();
+    const customerPhone = document.getElementById('editCustomerPhone').value.trim();
+    const startDate = document.getElementById('editStartDate').value;
+    const endDate = document.getElementById('editEndDate').value;
+    const totalPrice = document.getElementById('editTotalPrice').value.trim();
+    const status = document.getElementById('editBookingStatus').value;
+    
+    if (!customerName || !customerEmail || !customerPhone || !startDate || !endDate) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+    
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    if (end <= start) {
+        showNotification('Return date must be after pick-up date', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('../api/bookings', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                ...getAuthHeaders()
+            },
+            body: JSON.stringify({
+                id: bookingId,
+                carId: carId,
+                customerName,
+                customerEmail,
+                customerPhone,
+                startDate,
+                endDate,
+                totalPrice,
+                status
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Booking updated successfully', 'success');
+            closeBookingModal();
+            loadProducts();
+        } else {
+            showNotification(result.message || 'Failed to update booking', 'error');
+        }
+    } catch (error) {
+        console.error('Error updating booking:', error);
+        showNotification('Failed to update booking: ' + error.message, 'error');
+    }
+}
+
+async function deleteBooking() {
+    const bookingId = document.getElementById('editBookingId').value;
+    
+    if (!confirm('Are you sure you want to delete this booking?')) return;
+    
+    try {
+        const response = await fetch('../api/bookings', {
+            method: 'DELETE',
+            headers: { 
+                'Content-Type': 'application/json',
+                ...getAuthHeaders()
+            },
+            body: JSON.stringify({ id: bookingId })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Booking deleted successfully', 'success');
+            closeBookingModal();
+            loadProducts();
+        } else {
+            showNotification(result.message || 'Failed to delete booking', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting booking:', error);
+        showNotification('Failed to delete booking: ' + error.message, 'error');
+    }
+}
+
 // ===== EVENT LISTENERS =====
 function initializeEventListeners() {
     // Modal controls
@@ -538,8 +694,41 @@ function initializeEventListeners() {
     document.getElementById('closeModal').addEventListener('click', closeModal);
     document.getElementById('cancelBtn').addEventListener('click', closeModal);
     
+    // Booking modal controls
+    const closeBookingModalBtn = document.getElementById('closeBookingModal');
+    const cancelBookingBtn = document.getElementById('cancelBookingBtn');
+    const deleteBookingBtn = document.getElementById('deleteBookingBtn');
+    
+    if (closeBookingModalBtn) {
+        closeBookingModalBtn.addEventListener('click', closeBookingModal);
+    }
+    if (cancelBookingBtn) {
+        cancelBookingBtn.addEventListener('click', closeBookingModal);
+    }
+    if (deleteBookingBtn) {
+        deleteBookingBtn.addEventListener('click', deleteBooking);
+    }
+    
     // Form handling
     document.getElementById('productForm').addEventListener('submit', handleFormSubmit);
+    
+    const editBookingForm = document.getElementById('editBookingForm');
+    if (editBookingForm) {
+        editBookingForm.addEventListener('submit', handleBookingFormSubmit);
+    }
+    
+    // Date change handler for booking edit
+    const editStartDate = document.getElementById('editStartDate');
+    const editEndDate = document.getElementById('editEndDate');
+    if (editStartDate && editEndDate) {
+        editStartDate.addEventListener('change', () => {
+            if (editStartDate.value) {
+                const nextDay = new Date(editStartDate.value);
+                nextDay.setDate(nextDay.getDate() + 1);
+                editEndDate.min = nextDay.toISOString().split('T')[0];
+            }
+        });
+    }
     
     // Image upload handling
     const imageUpload = document.getElementById('productImageUpload');
