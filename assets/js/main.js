@@ -180,12 +180,14 @@ async function submitCarBooking(e) {
     e.preventDefault();
     
     const carId = document.getElementById('bookCarId').value;
+    const carName = document.getElementById('bookCarName').textContent;
     const customerName = document.getElementById('customerName').value.trim();
     const customerEmail = document.getElementById('customerEmail').value.trim();
     const customerPhone = document.getElementById('customerPhone').value.trim();
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
     const totalPrice = document.getElementById('bookCarTotalPrice').textContent;
+    const totalDays = document.getElementById('bookCarDays').textContent;
     
     if (!carId || !customerName || !customerEmail || !customerPhone || !startDate || !endDate) {
         showNotification('Please fill in all required fields', 'error');
@@ -200,7 +202,33 @@ async function submitCarBooking(e) {
         return;
     }
     
+    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    const formattedStartDate = start.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const formattedEndDate = end.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    
+    const messengerMessage = `I'm interested in your car rental services
+
+Full Name: ${customerName}
+
+Email: ${customerEmail}
+
+Phone Number: ${customerPhone}
+
+Pickup Date: ${formattedStartDate}
+
+Return Date: ${formattedEndDate}
+
+Total Days: ${days} day${days !== 1 ? 's' : ''}
+
+Total Amount: ${totalPrice}
+
+Car: ${carName}`;
+    
+    const encodedMessage = encodeURIComponent(messengerMessage);
+    const messengerUrl = `https://m.me/testSiteArea?text=${encodedMessage}`;
+    
     try {
+        // Save booking to API
         const response = await fetch('api/bookings', {
             method: 'POST',
             headers: {
@@ -220,14 +248,25 @@ async function submitCarBooking(e) {
         const result = await response.json();
         
         if (result.success) {
-            showNotification('Car booking submitted successfully!', 'success');
-            closeBookCarModal();
+            showNotification('Opening Messenger to send your booking details...', 'success');
+            window.open(messengerUrl, '_blank');
+            setTimeout(() => {
+                closeBookCarModal();
+            }, 1000);
         } else {
-            showNotification(result.message || 'Failed to submit booking', 'error');
+            showNotification('Opening Messenger to send your booking details...', 'success');
+            window.open(messengerUrl, '_blank');
+            setTimeout(() => {
+                closeBookCarModal();
+            }, 1000);
         }
     } catch (error) {
         console.error('Error submitting booking:', error);
-        showNotification('Failed to submit booking. Please try again.', 'error');
+        showNotification('Opening Messenger to send your booking details...', 'success');
+        window.open(messengerUrl, '_blank');
+        setTimeout(() => {
+            closeBookCarModal();
+        }, 1000);
     }
 }
 
