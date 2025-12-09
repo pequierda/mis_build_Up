@@ -1,48 +1,44 @@
 async function loadServices() {
     const servicesGrid = document.getElementById('servicesGrid');
     
-    // Show loading message
-    servicesGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div><p>Please wait, fetching services...</p></div>';
+    servicesGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div><p>Please wait, fetching cars...</p></div>';
     
     try {
-        const servicesRes = await fetch('api/admin/services');
-        const services = await servicesRes.json();
+        const carsResponse = await fetch('api/products');
+        const cars = await carsResponse.json();
 
-        if (!services || services.length === 0) {
-            try {
-                await fetch('api/init-services', { method: 'POST' });
-                return loadServices();
-            } catch (error) {
-                console.error('Failed to initialize services:', error);
-            }
+        if (!cars || cars.length === 0) {
+            servicesGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><p>No cars available at the moment. Check back soon!</p></div>';
+            return;
         }
         
-        servicesGrid.innerHTML = services.map(service => {
-            return createServiceCard(service, null);
-        }).join('');
+        const cardsHtml = await Promise.all(cars.map(async car => await createCarCard(car)));
+        servicesGrid.innerHTML = cardsHtml.join('');
     } catch (error) {
-        console.error('Error loading services:', error);
-        servicesGrid.innerHTML = '<div class="col-span-full text-center text-red-500 py-12"><p>Failed to load services. Please try again later.</p></div>';
-        showNotification('Failed to load services', 'error');
+        console.error('Error loading cars:', error);
+        servicesGrid.innerHTML = '<div class="col-span-full text-center text-red-500 py-12"><p>Failed to load cars. Please try again later.</p></div>';
+        showNotification('Failed to load cars', 'error');
     }
 }
 
-// Default services are now initialized via API endpoint
-
-function createServiceCard(service, rating) {
-    const iconSvg = `<img src="logo/me.png" alt="${service.title}" class="w-12 h-12 object-contain">`;
+async function createCarCard(car) {
+    const iconSvg = `<img src="logo/me.png" alt="Car" class="w-12 h-12 object-contain">`;
+    const carName = car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car';
+    const pricePerDay = car.pricePerDay || car.price || 'Price on request';
     
     return `
         <div class="service-card bg-white rounded-xl shadow-lg p-8 border border-gray-100">
-            ${service.image ? `<img src="${service.image}" alt="${service.title}" class="w-full h-48 object-cover rounded-lg mb-4">` : ''}
-            <div class="${service.color} mb-4">${iconSvg}</div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-3">${service.title}</h3>
-            <p class="text-gray-600 mb-6">${service.description}</p>
+            ${car.imageUrl ? `<img src="${car.imageUrl}" alt="${carName}" class="w-full h-48 object-cover rounded-lg mb-4">` : ''}
+            <div class="text-blue-600 mb-4">${iconSvg}</div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">${carName}</h3>
+            ${car.make && car.model ? `<p class="text-gray-600 text-sm mb-2">${car.make} ${car.model}${car.year ? ` (${car.year})` : ''}</p>` : ''}
+            <p class="text-green-600 font-semibold mb-3">${pricePerDay}</p>
+            ${car.description ? `<p class="text-gray-600 mb-6">${car.description}</p>` : ''}
             
             <div class="border-t pt-4">
-                <button onclick="bookService('${service.id}', '${service.title}')" class="w-full bg-gradient-to-r from-red-600 via-blue-600 to-black hover:from-red-700 hover:via-blue-700 hover:to-gray-800 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl group">
+                <button onclick="bookCar('${car.id}', '${carName}', '${pricePerDay}')" class="w-full bg-gradient-to-r from-red-600 via-blue-600 to-black hover:from-red-700 hover:via-blue-700 hover:to-gray-800 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl group" ${car.available === false ? 'disabled' : ''}>
                     <span class="flex items-center justify-center gap-2">
-                        Book Me
+                        ${car.available === false ? 'Not Available' : 'Rent Now'}
                         <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                         </svg>
@@ -53,18 +49,63 @@ function createServiceCard(service, rating) {
     `;
 }
 
-async function bookService(serviceId, serviceTitle) {
-    // Update modal content
-    document.getElementById('bookServiceTitle').textContent = `Book ${serviceTitle}`;
-    document.getElementById('bookServiceDescription').textContent = `Ready to get started? Contact us to book this amazing service!`;
+// Default services are now initialized via API endpoint
+
+
+async function bookCar(carId, carName, pricePerDay) {
+    const modal = document.getElementById('bookCarModal');
+    const form = document.getElementById('bookCarForm');
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
     
-    // Show modal
-    document.getElementById('bookServiceModal').classList.remove('hidden');
+    document.getElementById('bookCarId').value = carId;
+    document.getElementById('bookCarName').textContent = carName;
+    document.getElementById('bookCarPrice').textContent = pricePerDay || 'Price on request';
     
-    // Load contact information with service title
-    await loadContactInfoForBooking(serviceTitle);
+    const today = new Date().toISOString().split('T')[0];
+    startDateInput.min = today;
+    startDateInput.value = '';
+    endDateInput.value = '';
+    endDateInput.min = today;
+    document.getElementById('bookCarTotalPrice').textContent = '₱0.00';
+    document.getElementById('bookCarDays').textContent = '';
     
-    console.log('Booking requested for:', serviceTitle, serviceId);
+    modal.classList.remove('hidden');
+    
+    function calculateTotal() {
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+        const priceStr = pricePerDay ? pricePerDay.toString().replace(/[^0-9.,]/g, '') : '0';
+        const price = parseFloat(priceStr.replace(/,/g, '')) || 0;
+        
+        if (startDate) {
+            const nextDay = new Date(startDate);
+            nextDay.setDate(nextDay.getDate() + 1);
+            endDateInput.min = nextDay.toISOString().split('T')[0];
+        }
+        
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            if (end > start) {
+                const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+                const total = price * days;
+                document.getElementById('bookCarDays').textContent = `${days} day${days !== 1 ? 's' : ''}`;
+                const currencyMatch = pricePerDay ? pricePerDay.match(/[$₱€£¥]/) : null;
+                const currencySymbol = currencyMatch ? currencyMatch[0] : '₱';
+                document.getElementById('bookCarTotalPrice').textContent = `${currencySymbol}${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else {
+                document.getElementById('bookCarDays').textContent = 'Invalid date range';
+                document.getElementById('bookCarTotalPrice').textContent = '₱0.00';
+            }
+        }
+    }
+    
+    startDateInput.removeEventListener('change', calculateTotal);
+    endDateInput.removeEventListener('change', calculateTotal);
+    startDateInput.addEventListener('change', calculateTotal);
+    endDateInput.addEventListener('change', calculateTotal);
 }
 
 async function loadContactInfoForBooking(serviceTitle = '') {
@@ -131,8 +172,63 @@ async function loadContactInfoForBooking(serviceTitle = '') {
     }
 }
 
-function closeBookServiceModal() {
-    document.getElementById('bookServiceModal').classList.add('hidden');
+function closeBookCarModal() {
+    document.getElementById('bookCarModal').classList.add('hidden');
+}
+
+async function submitCarBooking(e) {
+    e.preventDefault();
+    
+    const carId = document.getElementById('bookCarId').value;
+    const customerName = document.getElementById('customerName').value.trim();
+    const customerEmail = document.getElementById('customerEmail').value.trim();
+    const customerPhone = document.getElementById('customerPhone').value.trim();
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const totalPrice = document.getElementById('bookCarTotalPrice').textContent;
+    
+    if (!carId || !customerName || !customerEmail || !customerPhone || !startDate || !endDate) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+    
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    if (end <= start) {
+        showNotification('Return date must be after pick-up date', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('api/bookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                carId,
+                customerName,
+                customerEmail,
+                customerPhone,
+                startDate,
+                endDate,
+                totalPrice
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Car booking submitted successfully!', 'success');
+            closeBookCarModal();
+        } else {
+            showNotification(result.message || 'Failed to submit booking', 'error');
+        }
+    } catch (error) {
+        console.error('Error submitting booking:', error);
+        showNotification('Failed to submit booking. Please try again.', 'error');
+    }
 }
 
 function showNotification(message, type) {
@@ -915,10 +1011,21 @@ document.addEventListener('DOMContentLoaded', () => {
         submitQuoteBtn.addEventListener('click', submitQuote);
     }
     
-    // Book service modal event listeners
-    const closeBookModalBtn = document.getElementById('closeBookModal');
-    if (closeBookModalBtn) {
-        closeBookModalBtn.addEventListener('click', closeBookServiceModal);
+    // Book car modal event listeners
+    const closeBookCarModalBtn = document.getElementById('closeBookCarModal');
+    const cancelBookCarBtn = document.getElementById('cancelBookCarBtn');
+    const bookCarForm = document.getElementById('bookCarForm');
+    
+    if (closeBookCarModalBtn) {
+        closeBookCarModalBtn.addEventListener('click', closeBookCarModal);
+    }
+    
+    if (cancelBookCarBtn) {
+        cancelBookCarBtn.addEventListener('click', closeBookCarModal);
+    }
+    
+    if (bookCarForm) {
+        bookCarForm.addEventListener('submit', submitCarBooking);
     }
     
     // Search functionality event listeners

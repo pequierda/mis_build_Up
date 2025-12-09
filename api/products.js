@@ -19,8 +19,7 @@ export default async function handler(req, res) {
 
     try {
         if (req.method === 'GET') {
-            // Get all products
-            const response = await fetch(`${UPSTASH_URL}/get/products_list`, {
+            const response = await fetch(`${UPSTASH_URL}/get/cars_list`, {
                 headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
             });
             const data = await response.json();
@@ -32,7 +31,6 @@ export default async function handler(req, res) {
             }
         }
 
-        // Check authentication for POST, PUT, DELETE
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return res.status(401).json({
@@ -42,41 +40,41 @@ export default async function handler(req, res) {
         }
 
         if (req.method === 'POST' || req.method === 'PUT') {
-            const product = {
-                id: req.body.id || `product_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+            const car = {
+                id: req.body.id || `car_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
                 name: req.body.name || '',
-                category: req.body.category || '',
+                make: req.body.make || '',
+                model: req.body.model || '',
+                year: req.body.year || '',
                 price: req.body.price || '',
+                pricePerDay: req.body.pricePerDay || '',
                 description: req.body.description || '',
                 imageUrl: req.body.imageUrl || '',
                 specifications: req.body.specifications || [],
-                inStock: req.body.inStock !== undefined ? req.body.inStock : true
+                available: req.body.available !== undefined ? req.body.available : true
             };
 
-            if (!product.name || !product.price) {
+            if (!car.name || !car.pricePerDay) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Product name and price are required'
+                    message: 'Car name and price per day are required'
                 });
             }
 
-            // Get existing products
-            const getRes = await fetch(`${UPSTASH_URL}/get/products_list`, {
+            const getRes = await fetch(`${UPSTASH_URL}/get/cars_list`, {
                 headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
             });
             const getData = await getRes.json();
-            let products = getData.result ? JSON.parse(getData.result) : [];
+            let cars = getData.result ? JSON.parse(getData.result) : [];
 
-            // Update or add product
-            const index = products.findIndex(p => p.id === product.id);
+            const index = cars.findIndex(c => c.id === car.id);
             if (index !== -1) {
-                products[index] = product;
+                cars[index] = car;
             } else {
-                products.push(product);
+                cars.push(car);
             }
 
-            // Save back to Upstash
-            await fetch(`${UPSTASH_URL}/set/products_list/${encodeURIComponent(JSON.stringify(products))}`, {
+            await fetch(`${UPSTASH_URL}/set/cars_list/${encodeURIComponent(JSON.stringify(cars))}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${UPSTASH_TOKEN}`
@@ -85,8 +83,8 @@ export default async function handler(req, res) {
 
             return res.status(200).json({
                 success: true,
-                message: 'Product saved successfully',
-                product
+                message: 'Car saved successfully',
+                car
             });
         }
 
@@ -96,22 +94,19 @@ export default async function handler(req, res) {
             if (!id) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Product ID is required'
+                    message: 'Car ID is required'
                 });
             }
 
-            // Get existing products
-            const getRes = await fetch(`${UPSTASH_URL}/get/products_list`, {
+            const getRes = await fetch(`${UPSTASH_URL}/get/cars_list`, {
                 headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
             });
             const getData = await getRes.json();
-            let products = getData.result ? JSON.parse(getData.result) : [];
+            let cars = getData.result ? JSON.parse(getData.result) : [];
 
-            // Filter out the product
-            products = products.filter(p => p.id !== id);
+            cars = cars.filter(c => c.id !== id);
 
-            // Save back to Upstash
-            await fetch(`${UPSTASH_URL}/set/products_list/${encodeURIComponent(JSON.stringify(products))}`, {
+            await fetch(`${UPSTASH_URL}/set/cars_list/${encodeURIComponent(JSON.stringify(cars))}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${UPSTASH_TOKEN}`
@@ -120,7 +115,7 @@ export default async function handler(req, res) {
 
             return res.status(200).json({
                 success: true,
-                message: 'Product deleted successfully'
+                message: 'Car deleted successfully'
             });
         }
 
@@ -130,7 +125,7 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error('Products error:', error);
+        console.error('Cars error:', error);
         return res.status(500).json({
             success: false,
             message: error.message

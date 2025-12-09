@@ -68,61 +68,93 @@ function trackActivity() {
     resetInactivityTimer();
 }
 
-// ===== PRODUCT MANAGEMENT =====
+// ===== CAR MANAGEMENT =====
 async function loadProducts() {
     try {
-        const response = await fetch('../api/products', {
-            headers: getAuthHeaders()
-        });
+        const [carsResponse, bookingsResponse] = await Promise.all([
+            fetch('../api/products', {
+                headers: getAuthHeaders()
+            }),
+            fetch('../api/bookings', {
+                headers: getAuthHeaders()
+            })
+        ]);
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (!carsResponse.ok) {
+            throw new Error(`HTTP error! status: ${carsResponse.status}`);
         }
         
-        const products = await response.json();
-        renderProductCards(products);
+        const cars = await carsResponse.json();
+        const bookings = bookingsResponse.ok ? await bookingsResponse.json() : [];
+        
+        renderProductCards(cars, bookings);
     } catch (error) {
-        console.error('Error loading products:', error);
-        showNotification('Failed to load products', 'error');
+        console.error('Error loading cars:', error);
+        showNotification('Failed to load cars', 'error');
     }
 }
 
-function renderProductCards(products) {
+function renderProductCards(cars, bookings) {
     const container = document.getElementById('productsContainer');
     
-    if (!products || products.length === 0) {
-        container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-12">No products yet. Add your first product!</p>';
+    if (!cars || cars.length === 0) {
+        container.innerHTML = '<p class="col-span-full text-center text-gray-500 py-12">No cars yet. Add your first car!</p>';
         return;
     }
     
-    container.innerHTML = products.map(product => createProductCard(product)).join('');
+    container.innerHTML = cars.map(car => {
+        const carBookings = bookings.filter(b => b.carId === car.id && b.status !== 'cancelled');
+        return createProductCard(car, carBookings);
+    }).join('');
     
-    // Add event listeners after DOM update
     setTimeout(() => {
         attachProductEventListeners();
     }, 100);
 }
 
-function createProductCard(product) {
+function createProductCard(car, bookings) {
+    const activeBookings = bookings.filter(b => {
+        const endDate = new Date(b.endDate);
+        return endDate >= new Date();
+    });
+    
+    const isBooked = activeBookings.length > 0;
+    
+    let bookingInfo = '';
+    if (isBooked) {
+        const bookingDates = activeBookings.map(b => {
+            const start = new Date(b.startDate).toLocaleDateString();
+            const end = new Date(b.endDate).toLocaleDateString();
+            return `${start} - ${end}`;
+        }).join(', ');
+        bookingInfo = `
+            <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p class="text-xs font-semibold text-yellow-800 mb-1">📅 Booked Dates:</p>
+                <p class="text-xs text-yellow-700">${bookingDates}</p>
+            </div>
+        `;
+    }
+    
     return `
         <div class="product-card bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow">
             <div class="text-center">
-                ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}" class="w-full h-32 object-cover rounded-lg mb-4">` : ''}
-                <h3 class="text-lg font-bold text-gray-900 mb-2">${product.name}</h3>
-                <p class="text-green-600 font-semibold mb-2">${product.price}</p>
-                <p class="text-gray-600 text-sm mb-2">${product.category}</p>
-                ${product.description ? `<p class="text-gray-500 text-xs">${product.description.substring(0, 80)}...</p>` : ''}
+                ${car.imageUrl ? `<img src="${car.imageUrl}" alt="${car.name}" class="w-full h-32 object-cover rounded-lg mb-4">` : ''}
+                <h3 class="text-lg font-bold text-gray-900 mb-2">${car.name}</h3>
+                ${car.make && car.model ? `<p class="text-gray-600 text-sm mb-1">${car.make} ${car.model}${car.year ? ` (${car.year})` : ''}</p>` : ''}
+                <p class="text-green-600 font-semibold mb-2">${car.pricePerDay || car.price || 'N/A'}</p>
+                ${car.description ? `<p class="text-gray-500 text-xs mb-2">${car.description.substring(0, 80)}...</p>` : ''}
                 <div class="flex items-center justify-center mt-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${product.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                        ${product.inStock ? 'In Stock' : 'Out of Stock'}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${car.available !== false ? (isBooked ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') : 'bg-red-100 text-red-800'}">
+                        ${car.available === false ? 'Not Available' : (isBooked ? 'Booked' : 'Available')}
                     </span>
                 </div>
+                ${bookingInfo}
             </div>
             <div class="flex gap-2 mt-4">
-                <button class="edit-product-btn flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition" data-id="${product.id}">
+                <button class="edit-product-btn flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition" data-id="${car.id}">
                     Edit
                 </button>
-                <button class="delete-product-btn bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition" data-id="${product.id}">
+                <button class="delete-product-btn bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition" data-id="${car.id}">
                     Delete
                 </button>
             </div>
@@ -158,34 +190,35 @@ async function editProduct(productId) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const products = await response.json();
-        const product = products.find(p => p.id === productId);
+        const cars = await response.json();
+        const car = cars.find(c => c.id === productId);
         
-        if (!product) {
-            showNotification('Product not found', 'error');
+        if (!car) {
+            showNotification('Car not found', 'error');
             return;
         }
         
-        currentEditingProduct = product;
+        currentEditingProduct = car;
         
-        // Populate form
-        document.getElementById('productId').value = product.id;
-        document.getElementById('productName').value = product.name || '';
-        document.getElementById('productCategory').value = product.category || '';
-        document.getElementById('productPrice').value = product.price || '';
-        document.getElementById('productDescription').value = product.description || '';
-        document.getElementById('productImageUrl').value = product.imageUrl || '';
-        document.getElementById('productInStock').checked = product.inStock !== false;
+        document.getElementById('productId').value = car.id;
+        document.getElementById('productName').value = car.name || '';
+        document.getElementById('productMake').value = car.make || '';
+        document.getElementById('productModel').value = car.model || '';
+        document.getElementById('productYear').value = car.year || '';
+        document.getElementById('productPricePerDay').value = car.pricePerDay || car.price || '';
+        document.getElementById('productDescription').value = car.description || '';
+        document.getElementById('productImageUrl').value = car.imageUrl || '';
+        document.getElementById('productInStock').checked = car.available !== false;
         
-        openModal('Edit Product');
+        openModal('Edit Car');
     } catch (error) {
-        console.error('Error loading product:', error);
-        showNotification('Failed to load product: ' + error.message, 'error');
+        console.error('Error loading car:', error);
+        showNotification('Failed to load car: ' + error.message, 'error');
     }
 }
 
 async function deleteProduct(productId) {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (!confirm('Are you sure you want to delete this car?')) return;
     
     try {
         const response = await fetch('../api/products', {
@@ -204,23 +237,23 @@ async function deleteProduct(productId) {
         const result = await response.json();
         
         if (result.success) {
-            showNotification('Product deleted successfully', 'success');
+            showNotification('Car deleted successfully', 'success');
             loadProducts();
         } else {
-            showNotification(result.message || 'Failed to delete product', 'error');
+            showNotification(result.message || 'Failed to delete car', 'error');
         }
     } catch (error) {
-        console.error('Error deleting product:', error);
-        showNotification('Failed to delete product: ' + error.message, 'error');
+        console.error('Error deleting car:', error);
+        showNotification('Failed to delete car: ' + error.message, 'error');
     }
 }
 
 // ===== MODAL MANAGEMENT =====
-function openModal(title = 'Add New Product') {
+function openModal(title = 'Add New Car') {
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('productModal').classList.remove('hidden');
     
-    if (title === 'Add New Product') {
+    if (title === 'Add New Car') {
         document.getElementById('productForm').reset();
         currentEditingProduct = null;
     }
@@ -240,26 +273,22 @@ async function handleFormSubmit(e) {
     const formData = {
         id: document.getElementById('productId').value || undefined,
         name: document.getElementById('productName').value.trim(),
-        category: document.getElementById('productCategory').value.trim(),
-        price: document.getElementById('productPrice').value.trim(),
+        make: document.getElementById('productMake').value.trim(),
+        model: document.getElementById('productModel').value.trim(),
+        year: document.getElementById('productYear').value.trim(),
+        pricePerDay: document.getElementById('productPricePerDay').value.trim(),
         description: document.getElementById('productDescription').value.trim(),
         imageUrl: document.getElementById('productImageUrl').value.trim() || '',
-        inStock: document.getElementById('productInStock').checked
+        available: document.getElementById('productInStock').checked
     };
     
-    // Validate required fields
     if (!formData.name) {
-        showNotification('Product name is required', 'error');
+        showNotification('Car name is required', 'error');
         return;
     }
     
-    if (!formData.category) {
-        showNotification('Product category is required', 'error');
-        return;
-    }
-    
-    if (!formData.price) {
-        showNotification('Product price is required', 'error');
+    if (!formData.pricePerDay) {
+        showNotification('Price per day is required', 'error');
         return;
     }
     
@@ -280,22 +309,22 @@ async function handleFormSubmit(e) {
         const result = await response.json();
         
         if (result.success) {
-            showNotification(formData.id ? 'Product updated successfully' : 'Product added successfully', 'success');
+            showNotification(formData.id ? 'Car updated successfully' : 'Car added successfully', 'success');
             closeModal();
             loadProducts();
         } else {
-            showNotification(result.message || 'Failed to save product', 'error');
+            showNotification(result.message || 'Failed to save car', 'error');
         }
     } catch (error) {
-        console.error('Error saving product:', error);
-        showNotification('Failed to save product: ' + error.message, 'error');
+        console.error('Error saving car:', error);
+        showNotification('Failed to save car: ' + error.message, 'error');
     }
 }
 
 // ===== EVENT LISTENERS =====
 function initializeEventListeners() {
     // Modal controls
-    document.getElementById('addProductBtn').addEventListener('click', () => openModal('Add New Product'));
+    document.getElementById('addProductBtn').addEventListener('click', () => openModal('Add New Car'));
     document.getElementById('closeModal').addEventListener('click', closeModal);
     document.getElementById('cancelBtn').addEventListener('click', closeModal);
     
