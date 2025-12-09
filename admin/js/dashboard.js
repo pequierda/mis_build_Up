@@ -358,12 +358,217 @@ function initializeEventListeners() {
     document.addEventListener('touchstart', trackActivity);
 }
 
+// ===== CALENDAR MANAGEMENT =====
+let currentCalendarDate = new Date();
+let allBookings = [];
+let allCars = [];
+
+async function loadCalendarData() {
+    try {
+        const [bookingsResponse, carsResponse] = await Promise.all([
+            fetch('../api/bookings', {
+                headers: getAuthHeaders()
+            }),
+            fetch('../api/products', {
+                headers: getAuthHeaders()
+            })
+        ]);
+        
+        if (bookingsResponse.ok) {
+            allBookings = await bookingsResponse.json();
+        }
+        
+        if (carsResponse.ok) {
+            allCars = await carsResponse.json();
+        }
+        
+        renderCalendar();
+    } catch (error) {
+        console.error('Error loading calendar data:', error);
+        showNotification('Failed to load calendar data', 'error');
+    }
+}
+
+function renderCalendar() {
+    const container = document.getElementById('calendarContainer');
+    const monthYear = document.getElementById('currentMonthYear');
+    
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    monthYear.textContent = `${monthNames[month]} ${year}`;
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+    
+    const activeBookings = allBookings.filter(b => b.status !== 'cancelled');
+    
+    let calendarHTML = `
+        <div class="grid grid-cols-7 gap-1">
+            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Sun</div>
+            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Mon</div>
+            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Tue</div>
+            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Wed</div>
+            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Thu</div>
+            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Fri</div>
+            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Sat</div>
+    `;
+    
+    for (let i = 0; i < firstDay; i++) {
+        const date = daysInPrevMonth - firstDay + i + 1;
+        calendarHTML += `
+            <div class="p-2 min-h-[80px] bg-gray-50 border border-gray-200 rounded text-gray-400 text-sm">
+                ${date}
+            </div>
+        `;
+    }
+    
+    const today = new Date();
+    const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const date = new Date(year, month, day);
+        const isToday = isCurrentMonth && day === today.getDate();
+        
+        const dayBookings = activeBookings.filter(b => {
+            const start = new Date(b.startDate);
+            const end = new Date(b.endDate);
+            return date >= start && date <= end;
+        });
+        
+        const isBooked = dayBookings.length > 0;
+        const bgColor = isBooked ? 'bg-yellow-100 border-yellow-400' : 'bg-green-50 border-green-200';
+        const textColor = isToday ? 'font-bold text-blue-600' : 'text-gray-700';
+        
+        calendarHTML += `
+            <div class="p-2 min-h-[80px] ${bgColor} border rounded cursor-pointer hover:shadow-md transition ${textColor}" 
+                 onclick="showDayBookings('${dateStr}', ${dayBookings.length})">
+                <div class="text-sm font-medium mb-1">${day}</div>
+                <div class="space-y-1">
+                    ${dayBookings.slice(0, 2).map(booking => {
+                        const car = allCars.find(c => c.id === booking.carId);
+                        const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car') : 'Unknown Car';
+                        return `<div class="text-xs bg-yellow-200 px-1 py-0.5 rounded truncate" title="${carName} - ${booking.customerName}">${carName}</div>`;
+                    }).join('')}
+                    ${dayBookings.length > 2 ? `<div class="text-xs text-gray-600">+${dayBookings.length - 2} more</div>` : ''}
+                </div>
+            </div>
+        `;
+    }
+    
+    const remainingDays = 42 - (firstDay + daysInMonth);
+    for (let day = 1; day <= remainingDays; day++) {
+        calendarHTML += `
+            <div class="p-2 min-h-[80px] bg-gray-50 border border-gray-200 rounded text-gray-400 text-sm">
+                ${day}
+            </div>
+        `;
+    }
+    
+    calendarHTML += '</div>';
+    container.innerHTML = calendarHTML;
+}
+
+function showDayBookings(dateStr, count) {
+    if (count === 0) return;
+    
+    const date = new Date(dateStr);
+    const activeBookings = allBookings.filter(b => b.status !== 'cancelled');
+    const dayBookings = activeBookings.filter(b => {
+        const start = new Date(b.startDate);
+        const end = new Date(b.endDate);
+        return date >= start && date <= end;
+    });
+    
+    const modal = document.getElementById('bookingDetailsModal');
+    const content = document.getElementById('bookingDetailsContent');
+    
+    if (dayBookings.length === 0) {
+        content.innerHTML = '<p class="text-gray-600">No bookings for this date.</p>';
+    } else {
+        content.innerHTML = `
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                Bookings for ${date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </h3>
+            <div class="space-y-4">
+                ${dayBookings.map(booking => {
+                    const car = allCars.find(c => c.id === booking.carId);
+                    const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car') : 'Unknown Car';
+                    const startDate = new Date(booking.startDate).toLocaleDateString();
+                    const endDate = new Date(booking.endDate).toLocaleDateString();
+                    
+                    return `
+                        <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-gray-900">${carName}</h4>
+                                <span class="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded">${booking.status || 'pending'}</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-2">
+                                <span class="font-medium">Period:</span> ${startDate} - ${endDate}
+                            </p>
+                            <p class="text-sm text-gray-600 mb-2">
+                                <span class="font-medium">Customer:</span> ${booking.customerName || 'N/A'}
+                            </p>
+                            <p class="text-sm text-gray-600 mb-2">
+                                <span class="font-medium">Email:</span> ${booking.customerEmail || 'N/A'}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">Phone:</span> ${booking.customerPhone || 'N/A'}
+                            </p>
+                            ${booking.totalPrice ? `<p class="text-sm text-green-600 font-semibold mt-2">Total: ${booking.totalPrice}</p>` : ''}
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function closeBookingModal() {
+    document.getElementById('bookingDetailsModal').classList.add('hidden');
+}
+
+function goToPrevMonth() {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+    renderCalendar();
+}
+
+function goToNextMonth() {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+    renderCalendar();
+}
+
+function goToToday() {
+    currentCalendarDate = new Date();
+    renderCalendar();
+}
+
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Dashboard DOM loaded'); // Debug log
     initializeEventListeners();
     checkAuth();
     loadServices();
+    loadCalendarData();
+    
+    // Calendar navigation
+    const prevMonthBtn = document.getElementById('prevMonthBtn');
+    const nextMonthBtn = document.getElementById('nextMonthBtn');
+    const todayBtn = document.getElementById('todayBtn');
+    const closeBookingModalBtn = document.getElementById('closeBookingModal');
+    
+    if (prevMonthBtn) prevMonthBtn.addEventListener('click', goToPrevMonth);
+    if (nextMonthBtn) nextMonthBtn.addEventListener('click', goToNextMonth);
+    if (todayBtn) todayBtn.addEventListener('click', goToToday);
+    if (closeBookingModalBtn) closeBookingModalBtn.addEventListener('click', closeBookingModal);
+    
+    window.showDayBookings = showDayBookings;
 });
 
 // Also try to initialize if DOM is already loaded
@@ -373,10 +578,12 @@ if (document.readyState === 'loading') {
         initializeEventListeners();
         checkAuth();
         loadServices();
+        loadCalendarData();
     });
 } else {
     console.log('Dashboard DOM already loaded'); // Debug log
     initializeEventListeners();
     checkAuth();
     loadServices();
+    loadCalendarData();
 }
