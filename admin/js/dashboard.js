@@ -498,28 +498,86 @@ function showDayBookings(dateStr, count) {
                 ${dayBookings.map(booking => {
                     const car = allCars.find(c => c.id === booking.carId);
                     const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car') : 'Unknown Car';
-                    const startDate = new Date(booking.startDate).toLocaleDateString();
-                    const endDate = new Date(booking.endDate).toLocaleDateString();
+                    const carMake = car ? (car.make || '') : '';
+                    const carModel = car ? (car.model || '') : '';
+                    const carYear = car ? (car.year || '') : '';
+                    const carImage = car ? (car.imageUrl || '') : '';
+                    const startDate = new Date(booking.startDate);
+                    const endDate = new Date(booking.endDate);
+                    const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
                     
                     return `
-                        <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <div class="flex justify-between items-start mb-2">
-                                <h4 class="font-semibold text-gray-900">${carName}</h4>
-                                <span class="px-2 py-1 bg-yellow-200 text-yellow-800 text-xs rounded">${booking.status || 'pending'}</span>
+                        <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-900 text-lg mb-1">${carName}</h4>
+                                    ${carMake && carModel ? `<p class="text-sm text-gray-600">${carMake} ${carModel}${carYear ? ` (${carYear})` : ''}</p>` : ''}
+                                </div>
+                                <span class="px-3 py-1 bg-yellow-200 text-yellow-800 text-xs font-semibold rounded-full">${booking.status || 'pending'}</span>
                             </div>
-                            <p class="text-sm text-gray-600 mb-2">
-                                <span class="font-medium">Period:</span> ${startDate} - ${endDate}
-                            </p>
-                            <p class="text-sm text-gray-600 mb-2">
-                                <span class="font-medium">Customer:</span> ${booking.customerName || 'N/A'}
-                            </p>
-                            <p class="text-sm text-gray-600 mb-2">
-                                <span class="font-medium">Email:</span> ${booking.customerEmail || 'N/A'}
-                            </p>
-                            <p class="text-sm text-gray-600">
-                                <span class="font-medium">Phone:</span> ${booking.customerPhone || 'N/A'}
-                            </p>
-                            ${booking.totalPrice ? `<p class="text-sm text-green-600 font-semibold mt-2">Total: ${booking.totalPrice}</p>` : ''}
+                            
+                            ${carImage ? `<img src="${carImage}" alt="${carName}" class="w-full h-32 object-cover rounded-lg mb-3">` : ''}
+                            
+                            <div class="space-y-2 mb-3">
+                                <div class="flex items-center gap-2 text-sm">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="font-medium text-gray-700">Rental Period:</span>
+                                    <span class="text-gray-600">${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span class="font-medium text-gray-700">Duration:</span>
+                                    <span class="text-gray-600">${days} day${days !== 1 ? 's' : ''}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="border-t pt-3 mt-3">
+                                <h5 class="font-semibold text-gray-900 mb-2 text-sm">Customer Information</h5>
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center gap-2 text-sm">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                        </svg>
+                                        <span class="font-medium text-gray-700">Name:</span>
+                                        <span class="text-gray-600">${booking.customerName || 'N/A'}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-sm">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                        </svg>
+                                        <span class="font-medium text-gray-700">Email:</span>
+                                        <a href="mailto:${booking.customerEmail || ''}" class="text-blue-600 hover:text-blue-800">${booking.customerEmail || 'N/A'}</a>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-sm">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                        </svg>
+                                        <span class="font-medium text-gray-700">Phone:</span>
+                                        <a href="tel:${booking.customerPhone || ''}" class="text-blue-600 hover:text-blue-800">${booking.customerPhone || 'N/A'}</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            ${booking.totalPrice ? `
+                                <div class="mt-3 pt-3 border-t">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-semibold text-gray-700">Total Price:</span>
+                                        <span class="text-lg font-bold text-green-600">${booking.totalPrice}</span>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${booking.createdAt ? `
+                                <div class="mt-2 pt-2 border-t">
+                                    <p class="text-xs text-gray-500">
+                                        <span class="font-medium">Booked on:</span> ${new Date(booking.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                </div>
+                            ` : ''}
                         </div>
                     `;
                 }).join('')}
