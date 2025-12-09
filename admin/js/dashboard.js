@@ -444,18 +444,76 @@ function renderCalendar() {
         const bgColor = isBooked ? 'bg-yellow-100 border-yellow-400' : 'bg-green-50 border-green-200';
         const textColor = isToday ? 'font-bold text-blue-600' : 'text-gray-700';
         
+        let hoverTooltip = '';
+        if (dayBookings.length > 0) {
+            const tooltipContent = dayBookings.map(booking => {
+                const car = allCars.find(c => c.id === booking.carId);
+                const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car') : 'Unknown Car';
+                const startDate = new Date(booking.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const endDate = new Date(booking.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return `${carName}\n${booking.customerName || 'Customer'}\n${startDate} - ${endDate}`;
+            }).join('\n\n');
+            hoverTooltip = `title="${tooltipContent}"`;
+        }
+        
         calendarHTML += `
-            <div class="p-2 min-h-[80px] ${bgColor} border rounded cursor-pointer hover:shadow-md transition ${textColor}" 
-                 onclick="showDayBookings('${dateStr}', ${dayBookings.length})">
+            <div class="p-2 min-h-[80px] ${bgColor} border rounded relative group ${textColor}" ${hoverTooltip}>
                 <div class="text-sm font-medium mb-1">${day}</div>
                 <div class="space-y-1">
-                    ${dayBookings.slice(0, 2).map(booking => {
+                    ${dayBookings.slice(0, 3).map(booking => {
                         const car = allCars.find(c => c.id === booking.carId);
                         const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car') : 'Unknown Car';
-                        return `<div class="text-xs bg-yellow-200 px-1 py-0.5 rounded truncate" title="${carName} - ${booking.customerName}">${carName}</div>`;
+                        const startDate = new Date(booking.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const endDate = new Date(booking.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const customerName = booking.customerName || 'Customer';
+                        const tooltipText = `${carName}\nCustomer: ${customerName}\nPeriod: ${startDate} - ${endDate}\nPhone: ${booking.customerPhone || 'N/A'}\nEmail: ${booking.customerEmail || 'N/A'}`;
+                        return `<div class="text-xs bg-yellow-200 px-1 py-0.5 rounded truncate hover:bg-yellow-300 transition" title="${tooltipText}">${carName}</div>`;
                     }).join('')}
-                    ${dayBookings.length > 2 ? `<div class="text-xs text-gray-600">+${dayBookings.length - 2} more</div>` : ''}
+                    ${dayBookings.length > 3 ? `<div class="text-xs text-gray-600">+${dayBookings.length - 3} more</div>` : ''}
                 </div>
+                
+                ${dayBookings.length > 0 ? `
+                    <div class="absolute left-full ml-2 top-0 w-72 bg-gray-900 text-white text-xs rounded-lg shadow-2xl p-4 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none max-h-96 overflow-y-auto">
+                        <div class="space-y-3">
+                            ${dayBookings.map(booking => {
+                                const car = allCars.find(c => c.id === booking.carId);
+                                const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car') : 'Unknown Car';
+                                const startDate = new Date(booking.startDate);
+                                const endDate = new Date(booking.endDate);
+                                const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                                return `
+                                    <div class="border-b border-gray-700 pb-3 last:border-0 last:pb-0">
+                                        <div class="font-semibold text-yellow-300 mb-2 text-sm">${carName}</div>
+                                        <div class="text-gray-300 space-y-1 text-xs">
+                                            <div class="flex items-center gap-1">
+                                                <span>👤</span>
+                                                <span>${booking.customerName || 'N/A'}</span>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <span>📅</span>
+                                                <span>${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <span>⏱️</span>
+                                                <span>${days} day${days !== 1 ? 's' : ''}</span>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <span>📞</span>
+                                                <span>${booking.customerPhone || 'N/A'}</span>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <span>✉️</span>
+                                                <span class="truncate">${booking.customerEmail || 'N/A'}</span>
+                                            </div>
+                                            ${booking.totalPrice ? `<div class="text-green-400 font-semibold mt-1">💰 ${booking.totalPrice}</div>` : ''}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        <div class="absolute left-0 top-4 -ml-1 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                    </div>
+                ` : ''}
             </div>
         `;
     }
@@ -473,124 +531,7 @@ function renderCalendar() {
     container.innerHTML = calendarHTML;
 }
 
-function showDayBookings(dateStr, count) {
-    if (count === 0) return;
-    
-    const date = new Date(dateStr);
-    const activeBookings = allBookings.filter(b => b.status !== 'cancelled');
-    const dayBookings = activeBookings.filter(b => {
-        const start = new Date(b.startDate);
-        const end = new Date(b.endDate);
-        return date >= start && date <= end;
-    });
-    
-    const modal = document.getElementById('bookingDetailsModal');
-    const content = document.getElementById('bookingDetailsContent');
-    
-    if (dayBookings.length === 0) {
-        content.innerHTML = '<p class="text-gray-600">No bookings for this date.</p>';
-    } else {
-        content.innerHTML = `
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                Bookings for ${date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </h3>
-            <div class="space-y-4">
-                ${dayBookings.map(booking => {
-                    const car = allCars.find(c => c.id === booking.carId);
-                    const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car') : 'Unknown Car';
-                    const carMake = car ? (car.make || '') : '';
-                    const carModel = car ? (car.model || '') : '';
-                    const carYear = car ? (car.year || '') : '';
-                    const carImage = car ? (car.imageUrl || '') : '';
-                    const startDate = new Date(booking.startDate);
-                    const endDate = new Date(booking.endDate);
-                    const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-                    
-                    return `
-                        <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg hover:shadow-md transition-shadow">
-                            <div class="flex justify-between items-start mb-3">
-                                <div class="flex-1">
-                                    <h4 class="font-semibold text-gray-900 text-lg mb-1">${carName}</h4>
-                                    ${carMake && carModel ? `<p class="text-sm text-gray-600">${carMake} ${carModel}${carYear ? ` (${carYear})` : ''}</p>` : ''}
-                                </div>
-                                <span class="px-3 py-1 bg-yellow-200 text-yellow-800 text-xs font-semibold rounded-full">${booking.status || 'pending'}</span>
-                            </div>
-                            
-                            ${carImage ? `<img src="${carImage}" alt="${carName}" class="w-full h-32 object-cover rounded-lg mb-3">` : ''}
-                            
-                            <div class="space-y-2 mb-3">
-                                <div class="flex items-center gap-2 text-sm">
-                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    <span class="font-medium text-gray-700">Rental Period:</span>
-                                    <span class="text-gray-600">${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                                </div>
-                                <div class="flex items-center gap-2 text-sm">
-                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    <span class="font-medium text-gray-700">Duration:</span>
-                                    <span class="text-gray-600">${days} day${days !== 1 ? 's' : ''}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="border-t pt-3 mt-3">
-                                <h5 class="font-semibold text-gray-900 mb-2 text-sm">Customer Information</h5>
-                                <div class="space-y-1.5">
-                                    <div class="flex items-center gap-2 text-sm">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                        </svg>
-                                        <span class="font-medium text-gray-700">Name:</span>
-                                        <span class="text-gray-600">${booking.customerName || 'N/A'}</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 text-sm">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                        </svg>
-                                        <span class="font-medium text-gray-700">Email:</span>
-                                        <a href="mailto:${booking.customerEmail || ''}" class="text-blue-600 hover:text-blue-800">${booking.customerEmail || 'N/A'}</a>
-                                    </div>
-                                    <div class="flex items-center gap-2 text-sm">
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                        </svg>
-                                        <span class="font-medium text-gray-700">Phone:</span>
-                                        <a href="tel:${booking.customerPhone || ''}" class="text-blue-600 hover:text-blue-800">${booking.customerPhone || 'N/A'}</a>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            ${booking.totalPrice ? `
-                                <div class="mt-3 pt-3 border-t">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-semibold text-gray-700">Total Price:</span>
-                                        <span class="text-lg font-bold text-green-600">${booking.totalPrice}</span>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            
-                            ${booking.createdAt ? `
-                                <div class="mt-2 pt-2 border-t">
-                                    <p class="text-xs text-gray-500">
-                                        <span class="font-medium">Booked on:</span> ${new Date(booking.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                    </p>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-        `;
-    }
-    
-    modal.classList.remove('hidden');
-}
 
-function closeBookingModal() {
-    document.getElementById('bookingDetailsModal').classList.add('hidden');
-}
 
 function goToPrevMonth() {
     currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
@@ -619,14 +560,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const prevMonthBtn = document.getElementById('prevMonthBtn');
     const nextMonthBtn = document.getElementById('nextMonthBtn');
     const todayBtn = document.getElementById('todayBtn');
-    const closeBookingModalBtn = document.getElementById('closeBookingModal');
     
     if (prevMonthBtn) prevMonthBtn.addEventListener('click', goToPrevMonth);
     if (nextMonthBtn) nextMonthBtn.addEventListener('click', goToNextMonth);
     if (todayBtn) todayBtn.addEventListener('click', goToToday);
-    if (closeBookingModalBtn) closeBookingModalBtn.addEventListener('click', closeBookingModal);
-    
-    window.showDayBookings = showDayBookings;
 });
 
 // Also try to initialize if DOM is already loaded
