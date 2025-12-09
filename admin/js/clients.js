@@ -187,6 +187,21 @@ async function editClient(clientId) {
             addImageInput();
         }
         
+        // Show previews for existing images
+        setTimeout(() => {
+            images.forEach((image, index) => {
+                const groups = imagesContainer.querySelectorAll('.image-input-group');
+                if (groups[index]) {
+                    const previewContainer = groups[index].querySelector('.image-preview-container');
+                    const previewImg = groups[index].querySelector('.image-preview');
+                    if (previewContainer && previewImg && image) {
+                        previewImg.src = image;
+                        previewContainer.classList.remove('hidden');
+                    }
+                }
+            });
+        }, 100);
+        
         openModal('Edit Client');
     } catch (error) {
         console.error('Error loading client:', error);
@@ -232,6 +247,12 @@ function openModal(title = 'Add New Client') {
     
     if (title === 'Add New Client') {
         document.getElementById('clientForm').reset();
+        const imagesContainer = document.getElementById('imagesContainer');
+        imagesContainer.innerHTML = '';
+        addImageInput();
+        document.querySelectorAll('.image-preview-container').forEach(container => {
+            container.classList.add('hidden');
+        });
         currentEditingClient = null;
     }
 }
@@ -240,6 +261,15 @@ function closeModal() {
     document.getElementById('clientModal').classList.add('hidden');
     document.getElementById('clientForm').reset();
     document.getElementById('clientId').value = '';
+    
+    // Clear image previews
+    document.querySelectorAll('.image-preview-container').forEach(container => {
+        container.classList.add('hidden');
+    });
+    document.querySelectorAll('.image-upload-input').forEach(input => {
+        input.value = '';
+    });
+    
     currentEditingClient = null;
 }
 
@@ -247,19 +277,84 @@ function closeModal() {
 function addImageInput(value = '') {
     const container = document.getElementById('imagesContainer');
     const div = document.createElement('div');
-    div.className = 'flex gap-2 mb-2';
+    div.className = 'image-input-group mb-3 p-3 border border-gray-200 rounded-lg';
+    const uniqueId = `img-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
     div.innerHTML = `
-        <input type="url" name="image" ${value ? '' : 'required'}
-            class="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
-            placeholder="https://example.com/client-image.jpg"
-            value="${value}">
-        <button type="button" onclick="removeImageInput(this)" class="px-2 sm:px-3 py-2 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
-            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
-        </button>
+        <div class="flex gap-2 mb-2">
+            <input type="url" name="image" ${value ? '' : 'required'}
+                class="image-url-input flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                placeholder="https://example.com/client-image.jpg (optional)"
+                value="${value}">
+            <input type="file" accept="image/*" class="image-upload-input hidden" data-input-id="${uniqueId}">
+            <button type="button" onclick="handleImageUploadClick(this)" class="px-3 sm:px-4 py-2 sm:py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm sm:text-base">
+                Upload
+            </button>
+            <button type="button" onclick="removeImageInput(this)" class="px-2 sm:px-3 py-2 sm:py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </button>
+        </div>
+        <div class="image-preview-container hidden">
+            <img class="image-preview w-full h-32 object-cover rounded-lg border border-gray-300">
+        </div>
     `;
     container.appendChild(div);
+    
+    // Add event listeners
+    const urlInput = div.querySelector('.image-url-input');
+    const uploadInput = div.querySelector('.image-upload-input');
+    const previewContainer = div.querySelector('.image-preview-container');
+    const previewImg = div.querySelector('.image-preview');
+    
+    if (value) {
+        previewImg.src = value;
+        previewContainer.classList.remove('hidden');
+    }
+    
+    urlInput.addEventListener('input', function() {
+        const url = this.value.trim();
+        if (url && !url.startsWith('data:')) {
+            previewImg.src = url;
+            previewContainer.classList.remove('hidden');
+            uploadInput.value = '';
+        } else if (url && url.startsWith('data:')) {
+            previewImg.src = url;
+            previewContainer.classList.remove('hidden');
+        } else if (!url) {
+            previewContainer.classList.add('hidden');
+        }
+    });
+    
+    uploadInput.addEventListener('change', function(e) {
+        handleClientImageUpload(e, urlInput, previewImg, previewContainer);
+    });
+}
+
+function handleImageUploadClick(button) {
+    const group = button.closest('.image-input-group');
+    const uploadInput = group.querySelector('.image-upload-input');
+    uploadInput.click();
+}
+
+function handleClientImageUpload(e, urlInput, previewImg, previewContainer) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 500000) {
+        showNotification('Image size must be less than 500KB', 'error');
+        e.target.value = '';
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const base64 = e.target.result;
+        urlInput.value = base64;
+        previewImg.src = base64;
+        previewContainer.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
 }
 
 function removeImageInput(button) {
@@ -271,7 +366,10 @@ function removeImageInput(button) {
         return;
     }
     
-    button.parentElement.remove();
+    const imageGroup = button.closest('.image-input-group');
+    if (imageGroup) {
+        imageGroup.remove();
+    }
 }
 
 // ===== FORM HANDLING =====
@@ -357,8 +455,19 @@ function initializeEventListeners() {
     document.addEventListener('touchstart', trackActivity);
 }
 
+// Make functions globally accessible for onclick handlers
+window.addImageInput = addImageInput;
+window.removeImageInput = removeImageInput;
+window.handleImageUploadClick = handleImageUploadClick;
+
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize with one image input
+    const imagesContainer = document.getElementById('imagesContainer');
+    if (imagesContainer && imagesContainer.children.length === 0) {
+        addImageInput();
+    }
+    
     initializeEventListeners();
     checkAuth();
     loadClients();

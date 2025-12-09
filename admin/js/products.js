@@ -346,9 +346,41 @@ async function editProduct(productId) {
 }
 
 async function deleteProduct(productId) {
-    if (!confirm('Are you sure you want to delete this car?')) return;
+    if (!confirm('Are you sure you want to delete this car? All bookings for this car will also be deleted.')) return;
     
     try {
+        // First, delete all bookings for this car
+        try {
+            const bookingsResponse = await fetch('../api/bookings', {
+                headers: getAuthHeaders()
+            });
+            
+            if (bookingsResponse.ok) {
+                const allBookings = await bookingsResponse.json();
+                const carBookings = allBookings.filter(b => b.carId === productId);
+                
+                // Delete each booking
+                for (const booking of carBookings) {
+                    await fetch('../api/bookings', {
+                        method: 'DELETE',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            ...getAuthHeaders()
+                        },
+                        body: JSON.stringify({ id: booking.id })
+                    });
+                }
+                
+                if (carBookings.length > 0) {
+                    console.log(`Deleted ${carBookings.length} booking(s) for this car`);
+                }
+            }
+        } catch (bookingError) {
+            console.error('Error deleting bookings:', bookingError);
+            // Continue with car deletion even if booking deletion fails
+        }
+        
+        // Then delete the car
         const response = await fetch('../api/products', {
             method: 'DELETE',
             headers: { 
@@ -365,7 +397,7 @@ async function deleteProduct(productId) {
         const result = await response.json();
         
         if (result.success) {
-            showNotification('Car deleted successfully', 'success');
+            showNotification('Car and its bookings deleted successfully', 'success');
             loadProducts();
         } else {
             showNotification(result.message || 'Failed to delete car', 'error');
