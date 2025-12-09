@@ -316,37 +316,48 @@ async function handleFormSubmit(e) {
 
 // ===== EVENT LISTENERS =====
 function initializeEventListeners() {
-    // Modal controls
-    document.getElementById('addServiceBtn').addEventListener('click', () => openModal('Add New Service'));
-    document.getElementById('closeModal').addEventListener('click', closeModal);
-    document.getElementById('cancelBtn').addEventListener('click', closeModal);
+    // Modal controls (only if elements exist - for services page)
+    const addServiceBtn = document.getElementById('addServiceBtn');
+    if (addServiceBtn) {
+        addServiceBtn.addEventListener('click', () => openModal('Add New Service'));
+    }
     
-    // Form handling
-    document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
-    document.getElementById('serviceForm').addEventListener('submit', handleFormSubmit);
+    const closeModalBtn = document.getElementById('closeModal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+    }
+    
+    const cancelBtn = document.getElementById('cancelBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeModal);
+    }
+    
+    // Form handling (only if elements exist - for services page)
+    const imageUpload = document.getElementById('imageUpload');
+    if (imageUpload) {
+        imageUpload.addEventListener('change', handleImageUpload);
+    }
+    
+    const serviceForm = document.getElementById('serviceForm');
+    if (serviceForm) {
+        serviceForm.addEventListener('submit', handleFormSubmit);
+    }
     
     // Logout button - ensure it works properly
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        console.log('Logout button found:', logoutBtn); // Debug log
-        // Remove any existing event listeners first
         logoutBtn.onclick = null;
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Logout button clicked via event listener'); // Debug log
             logout();
         });
         
-        // Also add onclick as backup
         logoutBtn.onclick = function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Logout button clicked via onclick'); // Debug log
             logout();
         };
-    } else {
-        console.log('Logout button not found!'); // Debug log
     }
     
     // Activity tracking for auto-logout
