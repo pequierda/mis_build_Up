@@ -51,7 +51,8 @@ export default async function handler(req, res) {
                 description: req.body.description || '',
                 imageUrl: req.body.imageUrl || '',
                 specifications: req.body.specifications || [],
-                available: req.body.available !== undefined ? req.body.available : true
+                available: req.body.available !== undefined ? req.body.available : true,
+                onBooking: req.body.onBooking === true
             };
 
             if (!car.name || !car.pricePerDay) {

@@ -113,27 +113,15 @@ function renderProductCards(cars, bookings) {
 }
 
 function createProductCard(car, bookings) {
-    const activeBookings = bookings.filter(b => {
+    const allBookings = bookings.filter(b => b.status !== 'cancelled');
+    const activeBookings = allBookings.filter(b => {
         const endDate = new Date(b.endDate);
         return endDate >= new Date();
     });
     
     const isBooked = activeBookings.length > 0;
     
-    let bookingInfo = '';
-    if (isBooked) {
-        const bookingDates = activeBookings.map(b => {
-            const start = new Date(b.startDate).toLocaleDateString();
-            const end = new Date(b.endDate).toLocaleDateString();
-            return `${start} - ${end}`;
-        }).join(', ');
-        bookingInfo = `
-            <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p class="text-xs font-semibold text-yellow-800 mb-1">📅 Booked Dates:</p>
-                <p class="text-xs text-yellow-700">${bookingDates}</p>
-            </div>
-        `;
-    }
+    const calendarView = generateCarCalendar(car, allBookings);
     
     return `
         <div class="product-card bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow">
@@ -144,12 +132,14 @@ function createProductCard(car, bookings) {
                 <p class="text-green-600 font-semibold mb-2">${car.pricePerDay || car.price || 'N/A'}</p>
                 ${car.description ? `<p class="text-gray-500 text-xs mb-2">${car.description.substring(0, 80)}...</p>` : ''}
                 <div class="flex items-center justify-center mt-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${car.available !== false ? (isBooked ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800') : 'bg-red-100 text-red-800'}">
-                        ${car.available === false ? 'Not Available' : (isBooked ? 'Booked' : 'Available')}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${car.available === false ? 'bg-red-100 text-red-800' : (car.onBooking === true ? 'bg-orange-100 text-orange-800' : (isBooked ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'))}">
+                        ${car.available === false ? 'Not Available' : (car.onBooking === true ? 'On Booking' : (isBooked ? 'Booked' : 'Available'))}
                     </span>
                 </div>
-                ${bookingInfo}
             </div>
+            
+            ${calendarView}
+            
             <div class="flex gap-2 mt-4">
                 <button class="edit-product-btn flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition" data-id="${car.id}">
                     Edit
@@ -160,6 +150,136 @@ function createProductCard(car, bookings) {
             </div>
         </div>
     `;
+}
+
+function generateCarCalendar(car, bookings) {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+    
+    const monthStart = new Date(currentYear, currentMonth, 1);
+    const monthEnd = new Date(currentYear, currentMonth + 1, 0);
+    
+    let calendarHTML = `
+        <div class="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    ${monthNames[currentMonth]} ${currentYear}
+                </h4>
+            </div>
+            <div class="grid grid-cols-7 gap-0.5 text-xs">
+                <div class="text-center font-semibold text-gray-600 py-1 text-[10px]">S</div>
+                <div class="text-center font-semibold text-gray-600 py-1 text-[10px]">M</div>
+                <div class="text-center font-semibold text-gray-600 py-1 text-[10px]">T</div>
+                <div class="text-center font-semibold text-gray-600 py-1 text-[10px]">W</div>
+                <div class="text-center font-semibold text-gray-600 py-1 text-[10px]">T</div>
+                <div class="text-center font-semibold text-gray-600 py-1 text-[10px]">F</div>
+                <div class="text-center font-semibold text-gray-600 py-1 text-[10px]">S</div>
+    `;
+    
+    for (let i = 0; i < firstDay; i++) {
+        const date = daysInPrevMonth - firstDay + i + 1;
+        calendarHTML += `<div class="p-1 min-h-[32px] bg-gray-100 text-gray-400 text-center text-[10px] flex items-center justify-center">${date}</div>`;
+    }
+    
+    const dayCells = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(currentYear, currentMonth, day);
+        const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
+        
+        const dayBookings = bookings.filter(b => {
+            const start = new Date(b.startDate);
+            const end = new Date(b.endDate);
+            return date >= start && date <= end;
+        });
+        
+        const isBooked = dayBookings.length > 0;
+        const bgClass = isToday ? 'bg-blue-50' : (isBooked ? 'bg-yellow-50' : 'bg-white');
+        const textClass = isToday ? 'text-blue-700 font-bold' : (isBooked ? 'text-yellow-800' : 'text-gray-700');
+        
+        dayCells.push({
+            day,
+            date,
+            isToday,
+            isBooked,
+            bgClass,
+            textClass,
+            dayBookings
+        });
+    }
+    
+    dayCells.forEach(cell => {
+        calendarHTML += `
+            <div class="p-1 min-h-[32px] ${cell.bgClass} border border-gray-200 relative ${cell.textClass} text-center text-[10px] flex flex-col">
+                <div class="mb-0.5">${cell.day}</div>
+                <div class="flex-1 flex flex-col gap-0.5">
+                    ${cell.dayBookings.slice(0, 2).map((booking, idx) => {
+                        const start = new Date(booking.startDate);
+                        const end = new Date(booking.endDate);
+                        const isStart = cell.date.getTime() === start.getTime();
+                        const isEnd = cell.date.getTime() === end.getTime();
+                        const isInRange = cell.date >= start && cell.date <= end;
+                        
+                        if (!isInRange) return '';
+                        
+                        let barClass = 'bg-red-500';
+                        if (idx === 0) barClass = 'bg-red-500';
+                        else if (idx === 1) barClass = 'bg-green-500';
+                        
+                        const customerName = booking.customerName || 'Customer';
+                        const displayName = customerName.length > 10 ? customerName.substring(0, 10) + '...' : customerName;
+                        const dateRange = `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                        
+                        return `<div class="${barClass} text-white text-[9px] px-1 py-0.5 rounded truncate" title="${customerName} (${dateRange})">${isStart ? displayName : ''}</div>`;
+                    }).join('')}
+                    ${cell.dayBookings.length > 2 ? `<div class="text-[9px] text-gray-600 bg-gray-200 px-1 py-0.5 rounded">+${cell.dayBookings.length - 2}</div>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    const remainingDays = 42 - (firstDay + daysInMonth);
+    for (let day = 1; day <= remainingDays && day <= 7; day++) {
+        calendarHTML += `<div class="p-1 min-h-[32px] bg-gray-100 text-gray-400 text-center text-[10px] flex items-center justify-center">${day}</div>`;
+    }
+    
+    calendarHTML += '</div></div>';
+    
+    if (bookings.length > 0) {
+        const upcomingBookings = bookings.filter(b => {
+            const end = new Date(b.endDate);
+            return end >= today;
+        }).slice(0, 3);
+        
+        if (upcomingBookings.length > 0) {
+            calendarHTML += `
+                <div class="mt-2 space-y-1">
+                    ${upcomingBookings.map(booking => {
+                        const start = new Date(booking.startDate);
+                        const end = new Date(booking.endDate);
+                        const customerName = booking.customerName || 'Customer';
+                        return `
+                            <div class="text-[10px] text-gray-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-200">
+                                <span class="font-semibold">${customerName}:</span> ${start.toLocaleDateString()} - ${end.toLocaleDateString()}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+    }
+    
+    return calendarHTML;
 }
 
 function attachProductEventListeners() {
@@ -209,6 +329,7 @@ async function editProduct(productId) {
         document.getElementById('productDescription').value = car.description || '';
         document.getElementById('productImageUrl').value = car.imageUrl || '';
         document.getElementById('productInStock').checked = car.available !== false;
+        document.getElementById('productOnBooking').checked = car.onBooking === true;
         
         openModal('Edit Car');
     } catch (error) {
@@ -279,7 +400,8 @@ async function handleFormSubmit(e) {
         pricePerDay: document.getElementById('productPricePerDay').value.trim(),
         description: document.getElementById('productDescription').value.trim(),
         imageUrl: document.getElementById('productImageUrl').value.trim() || '',
-        available: document.getElementById('productInStock').checked
+        available: document.getElementById('productInStock').checked,
+        onBooking: document.getElementById('productOnBooking').checked
     };
     
     if (!formData.name) {
