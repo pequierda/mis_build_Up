@@ -448,20 +448,20 @@ function renderCalendar() {
     console.log('Active bookings for calendar:', activeBookings.length);
     
     let calendarHTML = `
-        <div class="grid grid-cols-7 gap-1">
-            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Sun</div>
-            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Mon</div>
-            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Tue</div>
-            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Wed</div>
-            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Thu</div>
-            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Fri</div>
-            <div class="p-2 text-center font-semibold text-gray-700 text-sm">Sat</div>
+        <div class="grid grid-cols-7 gap-0.5 sm:gap-1">
+            <div class="p-1 sm:p-2 text-center font-semibold text-gray-700 text-[10px] sm:text-sm">S</div>
+            <div class="p-1 sm:p-2 text-center font-semibold text-gray-700 text-[10px] sm:text-sm">M</div>
+            <div class="p-1 sm:p-2 text-center font-semibold text-gray-700 text-[10px] sm:text-sm">T</div>
+            <div class="p-1 sm:p-2 text-center font-semibold text-gray-700 text-[10px] sm:text-sm">W</div>
+            <div class="p-1 sm:p-2 text-center font-semibold text-gray-700 text-[10px] sm:text-sm">T</div>
+            <div class="p-1 sm:p-2 text-center font-semibold text-gray-700 text-[10px] sm:text-sm">F</div>
+            <div class="p-1 sm:p-2 text-center font-semibold text-gray-700 text-[10px] sm:text-sm">S</div>
     `;
     
     for (let i = 0; i < firstDay; i++) {
         const date = daysInPrevMonth - firstDay + i + 1;
         calendarHTML += `
-            <div class="p-2 min-h-[80px] bg-gray-50 border border-gray-200 rounded text-gray-400 text-sm">
+            <div class="p-1 sm:p-2 min-h-[50px] sm:min-h-[80px] bg-gray-50 border border-gray-200 rounded text-gray-400 text-[10px] sm:text-sm flex items-center justify-center">
                 ${date}
             </div>
         `;
@@ -501,25 +501,27 @@ function renderCalendar() {
             hoverTooltip = `title="${tooltipContent}"`;
         }
         
+        const uniqueId = `day-${year}-${month}-${day}`;
         calendarHTML += `
-            <div class="p-2 min-h-[80px] ${bgColor} border rounded relative group ${textColor}" ${hoverTooltip}>
-                <div class="text-sm font-medium mb-1">${day}</div>
-                <div class="space-y-1">
-                    ${dayBookings.slice(0, 3).map(booking => {
+            <div class="p-1 sm:p-2 min-h-[50px] sm:min-h-[80px] ${bgColor} border rounded relative group ${textColor} touch-manipulation" ${hoverTooltip} data-day-id="${uniqueId}">
+                <div class="text-[10px] sm:text-sm font-medium mb-0.5 sm:mb-1">${day}</div>
+                <div class="space-y-0.5 sm:space-y-1">
+                    ${dayBookings.slice(0, 2).map(booking => {
                         const car = allCars.find(c => c.id === booking.carId);
                         const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car') : 'Unknown Car';
+                        const shortName = carName.length > 8 ? carName.substring(0, 8) + '...' : carName;
                         const startDate = new Date(booking.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         const endDate = new Date(booking.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         const customerName = booking.customerName || 'Customer';
                         const tooltipText = `${carName}\nCustomer: ${customerName}\nPeriod: ${startDate} - ${endDate}\nPhone: ${booking.customerPhone || 'N/A'}\nEmail: ${booking.customerEmail || 'N/A'}`;
-                        return `<div class="text-xs bg-yellow-200 px-1 py-0.5 rounded truncate hover:bg-yellow-300 transition" title="${tooltipText}">${carName}</div>`;
+                        return `<div class="text-[9px] sm:text-xs bg-yellow-200 px-0.5 sm:px-1 py-0.5 rounded truncate hover:bg-yellow-300 active:bg-yellow-400 transition" title="${tooltipText}">${shortName}</div>`;
                     }).join('')}
-                    ${dayBookings.length > 3 ? `<div class="text-xs text-gray-600">+${dayBookings.length - 3} more</div>` : ''}
+                    ${dayBookings.length > 2 ? `<div class="text-[9px] sm:text-xs text-gray-600">+${dayBookings.length - 2}</div>` : ''}
                 </div>
                 
                 ${dayBookings.length > 0 ? `
-                    <div class="absolute left-full ml-2 top-0 w-72 bg-gray-900 text-white text-xs rounded-lg shadow-2xl p-4 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none max-h-96 overflow-y-auto">
-                        <div class="space-y-3">
+                    <div id="tooltip-${uniqueId}" class="hidden sm:block absolute left-full ml-2 top-0 w-64 sm:w-72 bg-gray-900 text-white text-xs rounded-lg shadow-2xl p-3 sm:p-4 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none max-h-96 overflow-y-auto">
+                        <div class="space-y-2 sm:space-y-3">
                             ${dayBookings.map(booking => {
                                 const car = allCars.find(c => c.id === booking.carId);
                                 const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car') : 'Unknown Car';
@@ -527,9 +529,9 @@ function renderCalendar() {
                                 const endDate = new Date(booking.endDate);
                                 const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
                                 return `
-                                    <div class="border-b border-gray-700 pb-3 last:border-0 last:pb-0">
-                                        <div class="font-semibold text-yellow-300 mb-2 text-sm">${carName}</div>
-                                        <div class="text-gray-300 space-y-1 text-xs">
+                                    <div class="border-b border-gray-700 pb-2 sm:pb-3 last:border-0 last:pb-0">
+                                        <div class="font-semibold text-yellow-300 mb-1 sm:mb-2 text-xs sm:text-sm">${carName}</div>
+                                        <div class="text-gray-300 space-y-0.5 sm:space-y-1 text-[10px] sm:text-xs">
                                             <div class="flex items-center gap-1">
                                                 <span>👤</span>
                                                 <span>${booking.customerName || 'N/A'}</span>
@@ -550,13 +552,13 @@ function renderCalendar() {
                                                 <span>✉️</span>
                                                 <span class="truncate">${booking.customerEmail || 'N/A'}</span>
                                             </div>
-                                            ${booking.totalPrice ? `<div class="text-green-400 font-semibold mt-1">💰 ${booking.totalPrice}</div>` : ''}
+                                            ${booking.totalPrice ? `<div class="text-green-400 font-semibold mt-0.5 sm:mt-1">💰 ${booking.totalPrice}</div>` : ''}
                                         </div>
                                     </div>
                                 `;
                             }).join('')}
                         </div>
-                        <div class="absolute left-0 top-4 -ml-1 w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                        <div class="absolute left-0 top-3 sm:top-4 -ml-1 w-2 h-2 bg-gray-900 transform rotate-45"></div>
                     </div>
                 ` : ''}
             </div>
@@ -564,9 +566,9 @@ function renderCalendar() {
     }
     
     const remainingDays = 42 - (firstDay + daysInMonth);
-    for (let day = 1; day <= remainingDays; day++) {
+    for (let day = 1; day <= remainingDays && day <= 7; day++) {
         calendarHTML += `
-            <div class="p-2 min-h-[80px] bg-gray-50 border border-gray-200 rounded text-gray-400 text-sm">
+            <div class="p-1 sm:p-2 min-h-[50px] sm:min-h-[80px] bg-gray-50 border border-gray-200 rounded text-gray-400 text-[10px] sm:text-sm flex items-center justify-center">
                 ${day}
             </div>
         `;
@@ -575,9 +577,56 @@ function renderCalendar() {
     calendarHTML += '</div>';
     container.innerHTML = calendarHTML;
     
+    // Add mobile touch handlers for booking details
+    setTimeout(() => {
+        container.querySelectorAll('[data-day-id]').forEach(dayCell => {
+            const dayId = dayCell.getAttribute('data-day-id');
+            const tooltip = document.getElementById(`tooltip-${dayId}`);
+            if (tooltip && dayCell.querySelector('.bg-yellow-200')) {
+                dayCell.addEventListener('click', (e) => {
+                    if (window.innerWidth < 640) { // Mobile
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const allTooltips = container.querySelectorAll('[id^="tooltip-"]');
+                        allTooltips.forEach(t => {
+                            t.classList.add('hidden');
+                            t.classList.remove('opacity-100', 'visible');
+                            t.classList.add('opacity-0', 'invisible');
+                        });
+                        if (tooltip) {
+                            tooltip.classList.remove('hidden');
+                            tooltip.classList.remove('opacity-0', 'invisible');
+                            tooltip.classList.add('opacity-100', 'visible', 'pointer-events-auto');
+                            tooltip.style.position = 'fixed';
+                            const rect = dayCell.getBoundingClientRect();
+                            tooltip.style.left = '10px';
+                            tooltip.style.right = '10px';
+                            tooltip.style.top = `${rect.bottom + 10}px`;
+                            tooltip.style.width = 'auto';
+                            tooltip.style.maxWidth = 'calc(100vw - 20px)';
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Close mobile tooltips when clicking outside
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 640) {
+                if (!e.target.closest('[data-day-id]') && !e.target.closest('[id^="tooltip-"]')) {
+                    container.querySelectorAll('[id^="tooltip-"]').forEach(tooltip => {
+                        tooltip.classList.add('hidden');
+                        tooltip.classList.remove('opacity-100', 'visible');
+                        tooltip.classList.add('opacity-0', 'invisible');
+                    });
+                }
+            }
+        });
+    }, 100);
+    
     if (activeBookings.length === 0) {
         const noBookingsMsg = document.createElement('div');
-        noBookingsMsg.className = 'mt-4 text-center text-gray-500 text-sm';
+        noBookingsMsg.className = 'mt-4 text-center text-gray-500 text-xs sm:text-sm';
         noBookingsMsg.textContent = 'No bookings found for this month.';
         container.appendChild(noBookingsMsg);
     }
