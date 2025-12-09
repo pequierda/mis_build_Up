@@ -331,6 +331,13 @@ async function editProduct(productId) {
         document.getElementById('productInStock').checked = car.available !== false;
         document.getElementById('productOnBooking').checked = car.onBooking === true;
         
+        if (car.imageUrl) {
+            document.getElementById('productPreviewImg').src = car.imageUrl;
+            document.getElementById('productImagePreview').classList.remove('hidden');
+        } else {
+            document.getElementById('productImagePreview').classList.add('hidden');
+        }
+        
         openModal('Edit Car');
     } catch (error) {
         console.error('Error loading car:', error);
@@ -376,6 +383,8 @@ function openModal(title = 'Add New Car') {
     
     if (title === 'Add New Car') {
         document.getElementById('productForm').reset();
+        document.getElementById('productImagePreview').classList.add('hidden');
+        document.getElementById('productImageUpload').value = '';
         currentEditingProduct = null;
     }
 }
@@ -384,7 +393,54 @@ function closeModal() {
     document.getElementById('productModal').classList.add('hidden');
     document.getElementById('productForm').reset();
     document.getElementById('productId').value = '';
+    document.getElementById('productImagePreview').classList.add('hidden');
     currentEditingProduct = null;
+}
+
+// ===== IMAGE UPLOAD HANDLING =====
+function handleProductImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) {
+        const urlValue = document.getElementById('productImageUrl').value.trim();
+        if (urlValue && !urlValue.startsWith('data:')) {
+            document.getElementById('productPreviewImg').src = urlValue;
+            document.getElementById('productImagePreview').classList.remove('hidden');
+        }
+        return;
+    }
+    
+    if (file.size > 500000) {
+        showNotification('Image size must be less than 500KB', 'error');
+        e.target.value = '';
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const base64 = e.target.result;
+        document.getElementById('productImageUrl').value = base64;
+        document.getElementById('productPreviewImg').src = base64;
+        document.getElementById('productImagePreview').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+
+function handleProductImageUrlChange() {
+    const urlInput = document.getElementById('productImageUrl');
+    const urlValue = urlInput.value.trim();
+    const preview = document.getElementById('productImagePreview');
+    const previewImg = document.getElementById('productPreviewImg');
+    
+    if (urlValue && !urlValue.startsWith('data:')) {
+        previewImg.src = urlValue;
+        preview.classList.remove('hidden');
+        document.getElementById('productImageUpload').value = '';
+    } else if (urlValue && urlValue.startsWith('data:')) {
+        previewImg.src = urlValue;
+        preview.classList.remove('hidden');
+    } else if (!urlValue) {
+        preview.classList.add('hidden');
+    }
 }
 
 // ===== FORM HANDLING =====
@@ -452,6 +508,19 @@ function initializeEventListeners() {
     
     // Form handling
     document.getElementById('productForm').addEventListener('submit', handleFormSubmit);
+    
+    // Image upload handling
+    const imageUpload = document.getElementById('productImageUpload');
+    if (imageUpload) {
+        imageUpload.addEventListener('change', handleProductImageUpload);
+    }
+    
+    // Image URL change handling
+    const imageUrlInput = document.getElementById('productImageUrl');
+    if (imageUrlInput) {
+        imageUrlInput.addEventListener('input', handleProductImageUrlChange);
+        imageUrlInput.addEventListener('blur', handleProductImageUrlChange);
+    }
     
     // Logout button
     const logoutBtn = document.getElementById('logoutBtn');
