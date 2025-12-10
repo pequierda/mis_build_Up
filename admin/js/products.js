@@ -25,6 +25,32 @@ function showNotification(message, type) {
     }, 3000);
 }
 
+function setButtonLoading(button, isLoading, loadingText = 'Processing...') {
+    if (!button) return;
+    if (isLoading) {
+        if (!button.dataset.originalText) {
+            button.dataset.originalText = button.innerHTML;
+        }
+        button.disabled = true;
+        button.classList.add('opacity-70', 'cursor-not-allowed');
+        button.innerHTML = `
+            <span class="inline-flex items-center justify-center gap-2">
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z"></path>
+                </svg>
+                ${loadingText}
+            </span>
+        `;
+    } else {
+        button.disabled = false;
+        button.classList.remove('opacity-70', 'cursor-not-allowed');
+        if (button.dataset.originalText) {
+            button.innerHTML = button.dataset.originalText;
+        }
+    }
+}
+
 // ===== AUTHENTICATION =====
 async function checkAuth() {
     const token = getAuthToken();
@@ -498,6 +524,8 @@ function handleProductImageUrlChange() {
 // ===== FORM HANDLING =====
 async function handleFormSubmit(e) {
     e.preventDefault();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    setButtonLoading(submitBtn, true, 'Saving...');
     
     const formData = {
         id: document.getElementById('productId').value || undefined,
@@ -514,12 +542,14 @@ async function handleFormSubmit(e) {
     
     if (!formData.name) {
         showNotification('Car name is required', 'error');
-        return;
+            setButtonLoading(submitBtn, false);
+            return;
     }
     
     if (!formData.pricePerDay) {
         showNotification('Price per day is required', 'error');
-        return;
+            setButtonLoading(submitBtn, false);
+            return;
     }
     
     try {
@@ -548,6 +578,8 @@ async function handleFormSubmit(e) {
     } catch (error) {
         console.error('Error saving car:', error);
         showNotification('Failed to save car: ' + error.message, 'error');
+        } finally {
+            setButtonLoading(submitBtn, false);
     }
 }
 
@@ -743,6 +775,8 @@ function closeBookingModal() {
 
 async function handleBookingFormSubmit(e) {
     e.preventDefault();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    setButtonLoading(submitBtn, true, 'Updating...');
     
     const bookingId = document.getElementById('editBookingId').value;
     const carId = document.getElementById('editBookingCarId').value;
@@ -756,6 +790,7 @@ async function handleBookingFormSubmit(e) {
     
     if (!customerName || !customerEmail || !customerPhone || !startDate || !endDate) {
         showNotification('Please fill in all required fields', 'error');
+        setButtonLoading(submitBtn, false);
         return;
     }
     
@@ -764,6 +799,7 @@ async function handleBookingFormSubmit(e) {
     
     if (end <= start) {
         showNotification('Return date must be after pick-up date', 'error');
+        setButtonLoading(submitBtn, false);
         return;
     }
     
@@ -803,6 +839,8 @@ async function handleBookingFormSubmit(e) {
     } catch (error) {
         console.error('Error updating booking:', error);
         showNotification('Failed to update booking: ' + error.message, 'error');
+    } finally {
+        setButtonLoading(submitBtn, false);
     }
 }
 
@@ -810,6 +848,9 @@ async function deleteBooking() {
     const bookingId = document.getElementById('editBookingId').value;
     
     if (!confirm('Are you sure you want to delete this booking?')) return;
+    
+    const deleteBtn = document.getElementById('deleteBookingBtn');
+    setButtonLoading(deleteBtn, true, 'Deleting...');
     
     try {
         const response = await fetch('../api/bookings', {
@@ -837,6 +878,8 @@ async function deleteBooking() {
     } catch (error) {
         console.error('Error deleting booking:', error);
         showNotification('Failed to delete booking: ' + error.message, 'error');
+    } finally {
+        setButtonLoading(deleteBtn, false);
     }
 }
 

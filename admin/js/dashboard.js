@@ -496,7 +496,8 @@ function renderCalendar() {
                 const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car') : 'Unknown Car';
                 const startDate = new Date(booking.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 const endDate = new Date(booking.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                return `${carName}\n${booking.customerName || 'Customer'}\n${startDate} - ${endDate}`;
+                const status = booking.status || 'pending';
+                return `${carName}\n${booking.customerName || 'Customer'}\n${startDate} - ${endDate}\nStatus: ${status}`;
             }).join('\n\n');
             hoverTooltip = `title="${tooltipContent}"`;
         }
@@ -513,7 +514,8 @@ function renderCalendar() {
                         const startDate = new Date(booking.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         const endDate = new Date(booking.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         const customerName = booking.customerName || 'Customer';
-                        const tooltipText = `${carName}\nCustomer: ${customerName}\nPeriod: ${startDate} - ${endDate}\nPhone: ${booking.customerPhone || 'N/A'}\nEmail: ${booking.customerEmail || 'N/A'}`;
+                        const status = booking.status || 'pending';
+                        const tooltipText = `${carName}\nCustomer: ${customerName}\nPeriod: ${startDate} - ${endDate}\nStatus: ${status}\nPhone: ${booking.customerPhone || 'N/A'}\nEmail: ${booking.customerEmail || 'N/A'}`;
                         return `<div class="text-[9px] sm:text-xs bg-yellow-200 px-0.5 sm:px-1 py-0.5 rounded truncate hover:bg-yellow-300 active:bg-yellow-400 transition" title="${tooltipText}">${shortName}</div>`;
                     }).join('')}
                     ${dayBookings.length > 2 ? `<div class="text-[9px] sm:text-xs text-gray-600">+${dayBookings.length - 2}</div>` : ''}
@@ -528,6 +530,12 @@ function renderCalendar() {
                                 const startDate = new Date(booking.startDate);
                                 const endDate = new Date(booking.endDate);
                                 const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                                const status = booking.status || 'pending';
+                                const statusColor =
+                                    status === 'confirmed' ? 'bg-green-200 text-green-900' :
+                                    status === 'completed' ? 'bg-blue-200 text-blue-900' :
+                                    status === 'cancelled' ? 'bg-red-200 text-red-900' :
+                                    'bg-yellow-200 text-yellow-900';
                                 return `
                                     <div class="border-b border-gray-700 pb-2 sm:pb-3 last:border-0 last:pb-0">
                                         <div class="font-semibold text-yellow-300 mb-1 sm:mb-2 text-xs sm:text-sm">${carName}</div>
@@ -543,6 +551,10 @@ function renderCalendar() {
                                             <div class="flex items-center gap-1">
                                                 <span>⏱️</span>
                                                 <span>${days} day${days !== 1 ? 's' : ''}</span>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <span>📌</span>
+                                                <span class="px-1.5 py-0.5 rounded ${statusColor} capitalize">${status}</span>
                                             </div>
                                             <div class="flex items-center gap-1">
                                                 <span>📞</span>

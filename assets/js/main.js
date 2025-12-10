@@ -44,7 +44,7 @@ async function createCarCard(car, bookings = []) {
     const carName = car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car';
     const pricePerDay = car.pricePerDay || car.price || 'Price on request';
     const today = new Date();
-    const carBookings = (bookings || []).filter(b => b.carId === car.id && b.status !== 'cancelled');
+    const carBookings = (bookings || []).filter(b => b.carId === car.id && b.status !== 'cancelled' && b.status !== 'completed');
     const currentBookings = carBookings
         .filter(b => {
             if (!b.startDate || !b.endDate) return false;
