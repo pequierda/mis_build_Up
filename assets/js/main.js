@@ -1,18 +1,36 @@
+function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (Number.isNaN(d)) return '';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 async function loadServices() {
     const servicesGrid = document.getElementById('servicesGrid');
     
     servicesGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div><p>Please wait, fetching cars...</p></div>';
     
     try {
-        const carsResponse = await fetch('api/products');
+        const [carsResponse, bookingsResponse] = await Promise.all([
+            fetch('api/products'),
+            fetch('api/bookings')
+        ]);
+
         const cars = await carsResponse.json();
+        let bookings = [];
+        try {
+            bookings = await bookingsResponse.json();
+        } catch (err) {
+            console.warn('Failed to parse bookings response:', err);
+            bookings = [];
+        }
 
         if (!cars || cars.length === 0) {
             servicesGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><p>No cars available at the moment. Check back soon!</p></div>';
             return;
         }
         
-        const cardsHtml = await Promise.all(cars.map(async car => await createCarCard(car)));
+        const cardsHtml = await Promise.all(cars.map(async car => await createCarCard(car, bookings)));
         servicesGrid.innerHTML = cardsHtml.join('');
     } catch (error) {
         console.error('Error loading cars:', error);
@@ -21,10 +39,20 @@ async function loadServices() {
     }
 }
 
-async function createCarCard(car) {
+async function createCarCard(car, bookings = []) {
     const iconSvg = `<img src="logo/me.png" alt="Car" class="w-12 h-12 object-contain">`;
     const carName = car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car';
     const pricePerDay = car.pricePerDay || car.price || 'Price on request';
+    const today = new Date();
+    const carBookings = (bookings || []).filter(b => b.carId === car.id && b.status !== 'cancelled');
+    const currentBookings = carBookings
+        .filter(b => {
+            if (!b.startDate || !b.endDate) return false;
+            const end = new Date(b.endDate);
+            return end >= today;
+        })
+        .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+    const isCurrentlyBooked = currentBookings.length > 0;
     
     return `
         <div class="service-card bg-white rounded-xl shadow-lg p-8 border border-gray-100">
@@ -35,10 +63,24 @@ async function createCarCard(car) {
             <p class="text-green-600 font-semibold mb-3">${pricePerDay}</p>
             ${car.description ? `<p class="text-gray-600 mb-6">${car.description}</p>` : ''}
             
+            ${currentBookings.length > 0 ? `
+                <div class="bg-gray-50 border border-gray-100 rounded-lg p-4 mb-4">
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Booked dates</p>
+                    <div class="space-y-1">
+                        ${currentBookings.slice(0, 3).map(b => {
+                            const start = formatDate(b.startDate);
+                            const end = formatDate(b.endDate);
+                            return `<p class="text-sm text-gray-600">• ${start} - ${end}</p>`;
+                        }).join('')}
+                        ${currentBookings.length > 3 ? `<p class="text-xs text-gray-500">+${currentBookings.length - 3} more</p>` : ''}
+                    </div>
+                </div>
+            ` : ''}
+            
             <div class="border-t pt-4">
                 <button onclick="bookCar('${car.id}', '${carName}', '${pricePerDay}')" class="w-full bg-gradient-to-r from-red-600 via-blue-600 to-black hover:from-red-700 hover:via-blue-700 hover:to-gray-800 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl group" ${car.available === false || car.onBooking === true ? 'disabled' : ''}>
                     <span class="flex items-center justify-center gap-2">
-                        ${car.available === false ? 'Not Available' : (car.onBooking === true ? 'On Booking' : 'Rent Now')}
+                        ${car.available === false ? 'Not Available' : (car.onBooking === true ? 'On Booking' : (isCurrentlyBooked ? 'Booked' : 'Rent Now'))}
                         <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                         </svg>
