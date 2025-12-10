@@ -98,7 +98,7 @@ async function loadServices() {
         }, 100);
     } catch (error) {
         console.error('Error loading services:', error);
-        showNotification('Failed to load services', 'error');
+        // showNotification('Failed to load services', 'error');
     }
 }
 
