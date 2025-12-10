@@ -158,8 +158,8 @@ function createProductCard(car, bookings) {
                 <p class="text-green-600 font-semibold mb-2">${car.pricePerDay || car.price || 'N/A'}</p>
                 ${car.description ? `<p class="text-gray-500 text-xs mb-2">${car.description.substring(0, 80)}...</p>` : ''}
                 <div class="flex items-center justify-center mt-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${car.available === false ? 'bg-red-100 text-red-800' : (car.onBooking === true ? 'bg-orange-100 text-orange-800' : (isBooked ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'))}">
-                        ${car.available === false ? 'Not Available' : (car.onBooking === true ? 'On Booking' : (isBooked ? 'Booked' : 'Available'))}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${car.available === false ? 'bg-red-100 text-red-800' : (car.onBooking === true ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800')}">
+                        ${car.available === false ? 'Not Available' : (car.onBooking === true ? 'On Booking' : 'Available')}
                     </span>
                 </div>
             </div>
