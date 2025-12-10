@@ -39,10 +39,19 @@ async function loadServices() {
     }
 }
 
+function formatPrice(value) {
+    if (value === undefined || value === null || value === '') return 'Price on request';
+    const str = String(value).trim();
+    if (/[\p{Sc}]/u.test(str)) return str; // already has currency symbol
+    const num = Number(str.replace(/,/g, ''));
+    if (Number.isNaN(num)) return str;
+    return `₱${num.toLocaleString('en-PH', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+}
+
 async function createCarCard(car, bookings = []) {
     const iconSvg = `<img src="logo/me.png" alt="Car" class="w-12 h-12 object-contain">`;
     const carName = car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car';
-    const pricePerDay = car.pricePerDay || car.price || 'Price on request';
+    const displayPrice = formatPrice(car.pricePerDay || car.price);
     const today = new Date();
     const carBookings = (bookings || []).filter(b => b.carId === car.id && b.status !== 'cancelled' && b.status !== 'completed');
     const currentBookings = carBookings
@@ -60,7 +69,7 @@ async function createCarCard(car, bookings = []) {
             <div class="text-yellow-600 mb-4">${iconSvg}</div>
             <h3 class="text-2xl font-bold text-gray-900 mb-3">${carName}</h3>
             ${car.make && car.model ? `<p class="text-gray-600 text-sm mb-2">${car.make} ${car.model}${car.year ? ` (${car.year})` : ''}</p>` : ''}
-            <p class="text-green-600 font-semibold mb-3">${pricePerDay}</p>
+            <p class="text-green-600 font-semibold mb-3">${displayPrice}</p>
             ${car.description ? `<p class="text-gray-600 mb-6">${car.description}</p>` : ''}
             
             ${currentBookings.length > 0 ? `
@@ -78,7 +87,7 @@ async function createCarCard(car, bookings = []) {
             ` : ''}
             
             <div class="border-t pt-4">
-                <button onclick="bookCar('${car.id}', '${carName}', '${pricePerDay}')" class="w-full bg-gradient-to-r from-yellow-500 via-amber-500 to-black hover:from-yellow-600 hover:via-amber-600 hover:to-gray-800 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl group" ${car.available === false || car.onBooking === true ? 'disabled' : ''}>
+                <button onclick="bookCar('${car.id}', '${carName}', '${displayPrice}')" class="w-full bg-gradient-to-r from-yellow-500 via-amber-500 to-black hover:from-yellow-600 hover:via-amber-600 hover:to-gray-800 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl group" ${car.available === false || car.onBooking === true ? 'disabled' : ''}>
                     <span class="flex items-center justify-center gap-2">
                         ${car.available === false ? 'Not Available' : (car.onBooking === true ? 'On Booking' : (isCurrentlyBooked ? 'Booked' : 'Rent Now'))}
                         <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
