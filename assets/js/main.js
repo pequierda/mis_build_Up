@@ -69,7 +69,7 @@ async function createCarCard(car, bookings = []) {
             <div class="text-yellow-600 mb-4">${iconSvg}</div>
             <h3 class="text-2xl font-bold text-gray-900 mb-3">${carName}</h3>
             ${car.make && car.model ? `<p class="text-gray-600 text-sm mb-2">${car.make} ${car.model}${car.year ? ` (${car.year})` : ''}</p>` : ''}
-            <p class="text-green-600 font-semibold mb-3">${displayPrice}</p>
+            <p class="text-green-600 font-semibold mb-3">${displayPrice} / day</p>
             ${car.description ? `<p class="text-gray-600 mb-6">${car.description}</p>` : ''}
             
             ${currentBookings.length > 0 ? `
