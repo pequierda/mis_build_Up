@@ -850,19 +850,7 @@ function goToPage(page) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Smooth scroll helper for anchor buttons (e.g., Revenues card)
-document.addEventListener('click', (e) => {
-    const target = e.target.closest('a[href^="#"]');
-    if (!target) return;
-    const href = target.getAttribute('href');
-    if (href === '#revenueSection') {
-        e.preventDefault();
-        const section = document.querySelector(href);
-        if (section) {
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-});
+// Smooth scroll helper for anchor buttons (currently not used)
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -915,7 +903,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (manageRevenueBtn) {
         manageRevenueBtn.addEventListener('click', () => {
-            showNotification('Manage revenue coming soon', 'success');
+            window.location.href = 'revenue.html';
         });
     }
     
