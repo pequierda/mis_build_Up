@@ -121,10 +121,10 @@ function applyFilters() {
         if (status !== 'all' && b.status !== status) return false;
 
         if (fromDate || toDate) {
-            const start = b.startDate ? new Date(b.startDate) : null;
-            if (!start) return false;
-            if (fromDate && start < fromDate) return false;
-            if (toDate && start > toDate) return false;
+            const created = b.createdAt ? new Date(b.createdAt) : null;
+            if (!created) return false;
+            if (fromDate && created < fromDate) return false;
+            if (toDate && created > toDate) return false;
         }
 
         if (!search) return true;
