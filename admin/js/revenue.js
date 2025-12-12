@@ -91,10 +91,11 @@ async function loadRevenueData() {
 }
 
 // ===== SUMMARY =====
-function renderSummary() {
-    const completed = allBookings.filter(b => b.status === 'completed');
-    const confirmed = allBookings.filter(b => b.status === 'confirmed');
-    const pending = allBookings.filter(b => b.status === 'pending');
+function renderSummary(filteredList) {
+    const list = filteredList || applyFilters();
+    const completed = list.filter(b => b.status === 'completed');
+    const confirmed = list.filter(b => b.status === 'confirmed');
+    const pending = list.filter(b => b.status === 'pending');
 
     const totalRevenue = completed.reduce((sum, b) => {
         const numeric = parseFloat(String(b.totalPrice || 0).replace(/[^0-9.]/g, '')) || 0;
@@ -195,6 +196,7 @@ function renderTable() {
     }).join('');
 
     renderPagination(totalPages, filtered.length);
+    renderSummary(filtered);
 }
 
 function renderPagination(totalPages, totalItems) {
