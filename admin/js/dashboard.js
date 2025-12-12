@@ -661,197 +661,6 @@ function goToToday() {
     renderCalendar();
 }
 
-// ===== BOOKING HISTORY MANAGEMENT =====
-let allBookingsHistory = [];
-let allCarsHistory = [];
-let currentPage = 1;
-const itemsPerPage = 10;
-
-async function loadBookingHistory() {
-    const tableBody = document.getElementById('bookingsTableBody');
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>Loading bookings...</td></tr>';
-    
-    try {
-        const [bookingsResponse, carsResponse] = await Promise.all([
-            fetch('../api/bookings', {
-                headers: getAuthHeaders()
-            }),
-            fetch('../api/products', {
-                headers: getAuthHeaders()
-            })
-        ]);
-        
-        if (bookingsResponse.ok) {
-            const bookingsData = await bookingsResponse.json();
-            allBookingsHistory = Array.isArray(bookingsData) ? bookingsData : [];
-            allBookingsHistory.sort((a, b) => new Date(b.createdAt || b.startDate) - new Date(a.createdAt || a.startDate));
-        } else {
-            allBookingsHistory = [];
-        }
-        
-        if (carsResponse.ok) {
-            const carsData = await carsResponse.json();
-            allCarsHistory = Array.isArray(carsData) ? carsData : [];
-        } else {
-            allCarsHistory = [];
-        }
-        
-        calculateRevenue();
-        renderBookingsTable();
-    } catch (error) {
-        console.error('Error loading booking history:', error);
-        tableBody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-red-500">Failed to load bookings. Please refresh the page.</td></tr>';
-        showNotification('Failed to load booking history', 'error');
-    }
-}
-
-function calculateRevenue() {
-    const completedBookings = allBookingsHistory.filter(b => b.status === 'completed');
-    const totalRevenue = completedBookings.reduce((sum, booking) => {
-        const price = parseFloat(booking.totalPrice) || 0;
-        const priceStr = String(price);
-        const numericPrice = parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
-        return sum + numericPrice;
-    }, 0);
-    
-    const revenueElement = document.getElementById('totalRevenue');
-    if (revenueElement) {
-        revenueElement.textContent = `₱${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-}
-
-function renderBookingsTable() {
-    const tableBody = document.getElementById('bookingsTableBody');
-    if (!tableBody) return;
-    
-    const statusFilter = document.getElementById('statusFilter')?.value || 'all';
-    const searchTerm = (document.getElementById('searchBookings')?.value || '').toLowerCase();
-    
-    let filteredBookings = allBookingsHistory.filter(booking => {
-        const matchesStatus = statusFilter === 'all' || booking.status === statusFilter;
-        
-        if (!matchesStatus) return false;
-        
-        if (!searchTerm) return true;
-        
-        const car = allCarsHistory.find(c => c.id === booking.carId);
-        const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Unknown') : 'Unknown';
-        const customerName = (booking.customerName || '').toLowerCase();
-        const customerEmail = (booking.customerEmail || '').toLowerCase();
-        
-        return customerName.includes(searchTerm) || 
-               customerEmail.includes(searchTerm) || 
-               carName.toLowerCase().includes(searchTerm);
-    });
-    
-    const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedBookings = filteredBookings.slice(startIndex, endIndex);
-    
-    if (paginatedBookings.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No bookings found</td></tr>';
-        renderPagination(0, 0);
-        return;
-    }
-    
-    tableBody.innerHTML = paginatedBookings.map(booking => {
-        const car = allCarsHistory.find(c => c.id === booking.carId);
-        const carName = car ? (car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Unknown Car') : 'Unknown Car';
-        const startDate = new Date(booking.startDate);
-        const endDate = new Date(booking.endDate);
-        const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-        const status = booking.status || 'pending';
-        
-        const statusColors = {
-            'pending': 'bg-yellow-100 text-yellow-800',
-            'confirmed': 'bg-blue-100 text-blue-800',
-            'completed': 'bg-green-100 text-green-800',
-            'cancelled': 'bg-red-100 text-red-800'
-        };
-        
-        const statusColor = statusColors[status] || 'bg-gray-100 text-gray-800';
-        
-        const totalPrice = booking.totalPrice || '₱0.00';
-        const createdAt = booking.createdAt ? new Date(booking.createdAt).toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-        }) : 'N/A';
-        
-        return `
-            <tr class="hover:bg-gray-50 transition">
-                <td class="px-4 py-3 text-xs sm:text-sm text-gray-900">
-                    <span class="font-mono text-xs">${booking.id.substring(0, 12)}...</span>
-                </td>
-                <td class="px-4 py-3 text-xs sm:text-sm text-gray-900">${carName}</td>
-                <td class="px-4 py-3 text-xs sm:text-sm">
-                    <div class="font-medium text-gray-900">${booking.customerName || 'N/A'}</div>
-                    <div class="text-gray-500 text-xs">${booking.customerEmail || 'N/A'}</div>
-                    <div class="text-gray-500 text-xs">${booking.customerPhone || 'N/A'}</div>
-                </td>
-                <td class="px-4 py-3 text-xs sm:text-sm text-gray-700">
-                    <div>${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-                    <div class="text-gray-500">to ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-                </td>
-                <td class="px-4 py-3 text-xs sm:text-sm text-gray-700">${days} day${days !== 1 ? 's' : ''}</td>
-                <td class="px-4 py-3 text-xs sm:text-sm font-semibold ${status === 'completed' ? 'text-green-600' : 'text-gray-700'}">${totalPrice}</td>
-                <td class="px-4 py-3 text-xs sm:text-sm">
-                    <span class="px-2 py-1 rounded-full text-xs font-medium ${statusColor} capitalize">${status}</span>
-                </td>
-                <td class="px-4 py-3 text-xs sm:text-sm text-gray-500">${createdAt}</td>
-            </tr>
-        `;
-    }).join('');
-    
-    renderPagination(totalPages, filteredBookings.length);
-}
-
-function renderPagination(totalPages, totalItems) {
-    const paginationContainer = document.getElementById('bookingsPagination');
-    if (!paginationContainer) return;
-    
-    if (totalPages <= 1) {
-        paginationContainer.innerHTML = totalItems > 0 ? 
-            `<span class="text-sm text-gray-600">Showing ${totalItems} booking${totalItems !== 1 ? 's' : ''}</span>` : 
-            '';
-        return;
-    }
-    
-    let paginationHTML = `<span class="text-sm text-gray-600 mr-4">Showing ${((currentPage - 1) * itemsPerPage) + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems}</span>`;
-    
-    paginationHTML += '<div class="flex gap-1">';
-    
-    if (currentPage > 1) {
-        paginationHTML += `<button onclick="goToPage(${currentPage - 1})" class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">Previous</button>`;
-    }
-    
-    for (let i = 1; i <= totalPages; i++) {
-        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-            paginationHTML += `<button onclick="goToPage(${i})" class="px-3 py-1 text-sm border ${i === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 hover:bg-gray-50'} rounded">${i}</button>`;
-        } else if (i === currentPage - 2 || i === currentPage + 2) {
-            paginationHTML += '<span class="px-2 py-1 text-sm text-gray-400">...</span>';
-        }
-    }
-    
-    if (currentPage < totalPages) {
-        paginationHTML += `<button onclick="goToPage(${currentPage + 1})" class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">Next</button>`;
-    }
-    
-    paginationHTML += '</div>';
-    paginationContainer.innerHTML = paginationHTML;
-}
-
-function goToPage(page) {
-    currentPage = page;
-    renderBookingsTable();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Smooth scroll helper for anchor buttons (currently not used)
-
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Dashboard DOM loaded'); // Debug log
@@ -859,7 +668,6 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuth();
     loadServices();
     loadCalendarData();
-    loadBookingHistory();
     
     // Calendar navigation
     const prevMonthBtn = document.getElementById('prevMonthBtn');
@@ -870,44 +678,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (nextMonthBtn) nextMonthBtn.addEventListener('click', goToNextMonth);
     if (todayBtn) todayBtn.addEventListener('click', goToToday);
     
-    // Booking history filters
-    const statusFilter = document.getElementById('statusFilter');
-    const searchBookings = document.getElementById('searchBookings');
-    const refreshBookingsBtn = document.getElementById('refreshBookingsBtn');
-    const manageRevenueBtn = document.getElementById('manageRevenueBtn');
-    
-    if (statusFilter) {
-        statusFilter.addEventListener('change', () => {
-            currentPage = 1;
-            renderBookingsTable();
-        });
-    }
-    
-    if (searchBookings) {
-        let searchTimeout;
-        searchBookings.addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                currentPage = 1;
-                renderBookingsTable();
-            }, 300);
-        });
-    }
-    
-    if (refreshBookingsBtn) {
-        refreshBookingsBtn.addEventListener('click', () => {
-            loadBookingHistory();
-            showNotification('Bookings refreshed', 'success');
-        });
-    }
-    
-    if (manageRevenueBtn) {
-        manageRevenueBtn.addEventListener('click', () => {
-            window.location.href = 'revenue.html';
-        });
-    }
-    
-    window.goToPage = goToPage;
 });
 
 // Also try to initialize if DOM is already loaded
@@ -918,7 +688,6 @@ if (document.readyState === 'loading') {
         checkAuth();
         loadServices();
         loadCalendarData();
-        loadBookingHistory();
     });
 } else {
     console.log('Dashboard DOM already loaded'); // Debug log
@@ -926,5 +695,4 @@ if (document.readyState === 'loading') {
     checkAuth();
     loadServices();
     loadCalendarData();
-    loadBookingHistory();
 }
