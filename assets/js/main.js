@@ -29,7 +29,7 @@ async function loadServices() {
         }
         allCarsData = Array.isArray(cars) ? cars : [];
         allBookingsData = Array.isArray(bookings) ? bookings : [];
-        renderCars(document.getElementById('categoryFilter')?.value || 'all');
+        renderCars();
     } catch (error) {
         console.error('Error loading cars:', error);
         servicesGrid.innerHTML = '<div class="col-span-full text-center text-red-500 py-12"><p>Failed to load cars. Please try again later.</p></div>';
@@ -37,13 +37,11 @@ async function loadServices() {
     }
 }
 
-async function renderCars(category = 'all') {
+async function renderCars() {
     const servicesGrid = document.getElementById('servicesGrid');
     if (!servicesGrid) return;
 
-    const filteredCars = category === 'all'
-        ? allCarsData
-        : allCarsData.filter(c => (c.category || 'self_drive') === category);
+    const filteredCars = allCarsData;
 
     if (!filteredCars || filteredCars.length === 0) {
         servicesGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><p>No cars found for this category.</p></div>';
@@ -67,7 +65,6 @@ async function createCarCard(car, bookings = []) {
     const iconSvg = `<img src="logo/me.png" alt="Car" class="w-12 h-12 object-contain">`;
     const carName = car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car';
     const displayPrice = formatPrice(car.pricePerDay || car.price);
-    const categoryLabel = car.category === 'with_driver' ? 'With Driver' : 'Self Drive';
     const today = new Date();
     const carBookings = (bookings || []).filter(b => b.carId === car.id && b.status !== 'cancelled' && b.status !== 'completed');
     const currentBookings = carBookings
@@ -86,11 +83,6 @@ async function createCarCard(car, bookings = []) {
             <h3 class="text-2xl font-bold text-gray-900 mb-3">${carName}</h3>
             ${car.make && car.model ? `<p class="text-gray-600 text-sm mb-2">${car.make} ${car.model}${car.year ? ` (${car.year})` : ''}</p>` : ''}
             <p class="text-green-600 font-semibold mb-3">${displayPrice} / day</p>
-            <div class="mb-3">
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${car.category === 'with_driver' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}">
-                    ${categoryLabel}
-                </span>
-            </div>
             ${car.description ? `<p class="text-gray-600 mb-6">${car.description}</p>` : ''}
             
             ${currentBookings.length > 0 ? `
@@ -1100,12 +1092,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadContactInfo();
     loadProducts();
     
-    const categoryFilter = document.getElementById('categoryFilter');
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', (e) => {
-            renderCars(e.target.value || 'all');
-        });
-    }
     
     // Quote modal event listeners
     const getQuoteBtn = document.getElementById('getQuoteBtn');
