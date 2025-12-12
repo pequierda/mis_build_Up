@@ -30,7 +30,7 @@
         <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
         
         <!-- Management Sections Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
             <!-- Services Section
             <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
                 <div class="flex items-center justify-between mb-4">
@@ -114,10 +114,31 @@
                 <p class="text-sm text-gray-600 mb-4">Manage contact information</p>
                 <a href="contact.html" class="text-orange-600 hover:text-orange-800 text-sm font-medium">View All Contacts →</a>
             </div>
+
+            <!-- Revenue Section -->
+            <a href="#revenueSection" class="bg-white rounded-xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition block focus:outline-none focus:ring-2 focus:ring-orange-400">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-2.21 0-4 1.343-4 3s1.79 3 4 3 4-1.343 4-3-1.79-3-4-3zm0 0V5m0 9v3m8-6a8 8 0 11-16 0 8 8 0 0116 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="ml-3 text-lg font-semibold text-gray-900">Revenues</h3>
+                    </div>
+                    <div class="bg-orange-500 text-white p-2 rounded-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">View revenue from completed bookings</p>
+                <span class="text-orange-600 hover:text-orange-800 text-sm font-medium">Go to Revenues →</span>
+            </a>
         </div>
         
         <!-- Bookings Calendar Section -->
-        <div class="mt-8">
+        <div class="mt-8" id="revenueSection">
             <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
                     <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Bookings Calendar</h2>

@@ -850,6 +850,20 @@ function goToPage(page) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// Smooth scroll helper for anchor buttons (e.g., Revenues card)
+document.addEventListener('click', (e) => {
+    const target = e.target.closest('a[href^="#"]');
+    if (!target) return;
+    const href = target.getAttribute('href');
+    if (href === '#revenueSection') {
+        e.preventDefault();
+        const section = document.querySelector(href);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+});
+
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Dashboard DOM loaded'); // Debug log
