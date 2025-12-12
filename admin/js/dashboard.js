@@ -872,6 +872,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusFilter = document.getElementById('statusFilter');
     const searchBookings = document.getElementById('searchBookings');
     const refreshBookingsBtn = document.getElementById('refreshBookingsBtn');
+    const manageRevenueBtn = document.getElementById('manageRevenueBtn');
     
     if (statusFilter) {
         statusFilter.addEventListener('change', () => {
@@ -895,6 +896,12 @@ document.addEventListener('DOMContentLoaded', function() {
         refreshBookingsBtn.addEventListener('click', () => {
             loadBookingHistory();
             showNotification('Bookings refreshed', 'success');
+        });
+    }
+    
+    if (manageRevenueBtn) {
+        manageRevenueBtn.addEventListener('click', () => {
+            showNotification('Manage revenue coming soon', 'success');
         });
     }
     

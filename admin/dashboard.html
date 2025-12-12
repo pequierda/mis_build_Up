@@ -171,8 +171,14 @@
                         <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Booking History</h2>
                         <p class="text-sm text-gray-600 mt-1">View all bookings and revenue</p>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center bg-white border border-orange-100 shadow-md rounded-2xl px-4 py-3 sm:px-5 sm:py-4">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                        <button id="manageRevenueBtn" class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold transition shadow">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h11M3 6h18M3 14h18M3 18h11"/>
+                            </svg>
+                            Manage Revenue
+                        </button>
+                        <div class="flex items-center bg-white border border-orange-100 shadow-md rounded-2xl px-4 py-3 sm:px-5 sm:py-4 w-full sm:w-auto">
                             <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
                                 <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-2.21 0-4 1.343-4 3s1.79 3 4 3 4-1.343 4-3-1.79-3-4-3zm0 0V5m0 9v3m8-6a8 8 0 11-16 0 8 8 0 0116 0z"/>
@@ -189,7 +195,7 @@
                                 </svg>
                             </div>
                         </div>
-                        <button id="refreshBookingsBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition">
+                        <button id="refreshBookingsBtn" class="w-full sm:w-auto px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition shadow">
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                             </svg>
