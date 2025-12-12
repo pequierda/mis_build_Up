@@ -374,6 +374,7 @@ async function editProduct(productId) {
         document.getElementById('productPricePerDay').value = car.pricePerDay || car.price || '';
         document.getElementById('productDescription').value = car.description || '';
         document.getElementById('productImageUrl').value = car.imageUrl || '';
+        document.getElementById('productCategory').value = car.category || 'self_drive';
         document.getElementById('productInStock').checked = car.available !== false;
         document.getElementById('productOnBooking').checked = car.onBooking === true;
         
@@ -536,6 +537,7 @@ async function handleFormSubmit(e) {
         pricePerDay: document.getElementById('productPricePerDay').value.trim(),
         description: document.getElementById('productDescription').value.trim(),
         imageUrl: document.getElementById('productImageUrl').value.trim() || '',
+        category: document.getElementById('productCategory')?.value || 'self_drive',
         available: document.getElementById('productInStock').checked,
         onBooking: document.getElementById('productOnBooking').checked
     };
