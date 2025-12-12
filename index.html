@@ -11,16 +11,21 @@
     <style>
         :root {
             --hero-from: #ffffff;
-            --hero-via: #facc15;
-            --hero-to: #0b1224;
-            --hero-overlay-from: rgba(11, 18, 36, 0.6);
-            --hero-overlay-to: rgba(250, 204, 21, 0.25);
+            --hero-via: #ffa600;
+            --hero-to: #00202e;
+            --hero-overlay-from: rgba(0, 32, 46, 0.55);
+            --hero-overlay-to: rgba(255, 166, 0, 0.22);
         }
         .hero-gradient {
             background: linear-gradient(135deg, var(--hero-from), var(--hero-via), var(--hero-to));
         }
         .hero-overlay {
             background: linear-gradient(215deg, var(--hero-overlay-from), transparent, var(--hero-overlay-to));
+        }
+        .text-outline {
+            text-shadow:
+                0 2px 4px rgba(0, 0, 0, 0.55),
+                0 0 2px rgba(0, 0, 0, 0.65);
         }
     </style>
 </head>
@@ -38,7 +43,7 @@
                 <!-- Logo -->
                 <div class="flex items-center">
                     <img src="logo/me.png" alt="Build up" class="w-10 h-10 object-contain">
-                    <span class="ml-3 text-2xl font-bold bg-gradient-to-r from-amber-500 to-slate-900 bg-clip-text text-transparent">Rental Cars</span>
+                    <span class="ml-3 text-2xl font-bold bg-gradient-to-r from-[#ffa600] to-[#00202e] bg-clip-text text-transparent">Rental Cars</span>
                 </div>
                 
                 <!-- Desktop Menu -->
@@ -69,9 +74,9 @@
         <div class="absolute inset-0 hero-overlay"></div>
         
         <!-- Animated Background Elements -->
-        <div class="absolute top-20 left-10 w-32 h-32 bg-amber-300/25 rounded-full blur-xl animate-pulse"></div>
-        <div class="absolute top-40 right-20 w-24 h-24 bg-amber-400/25 rounded-full blur-lg animate-pulse delay-1000"></div>
-        <div class="absolute bottom-20 left-1/4 w-40 h-40 bg-black/40 rounded-full blur-2xl animate-pulse delay-2000"></div>
+        <div class="absolute top-20 left-10 w-32 h-32 bg-[#ffa600]/20 rounded-full blur-xl animate-pulse"></div>
+        <div class="absolute top-40 right-20 w-24 h-24 bg-[#ffa600]/18 rounded-full blur-lg animate-pulse delay-1000"></div>
+        <div class="absolute bottom-20 left-1/4 w-40 h-40 bg-[#00202e]/40 rounded-full blur-2xl animate-pulse delay-2000"></div>
         
         <div class="relative z-10 text-white py-24">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -81,14 +86,14 @@
                     </div>
                 </div>
                 
-                <h1 class="text-5xl md:text-7xl font-bold mb-6 animate-fade-in text-white drop-shadow-lg">
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 animate-fade-in text-white drop-shadow-lg text-outline">
                     Welcome to our Car Rental Service
                 </h1>
-                <h2 class="text-3xl md:text-4xl font-semibold mb-8 text-amber-100 drop-shadow-lg">
+                <h2 class="text-3xl md:text-4xl font-semibold mb-8 text-amber-100 drop-shadow-lg text-outline">
                     Rental Cars
                 </h2>
                 
-                <p class="text-xl md:text-2xl mb-12 text-gray-50 max-w-4xl mx-auto leading-relaxed drop-shadow-lg">
+                <p class="text-xl md:text-2xl mb-12 text-gray-50 max-w-4xl mx-auto leading-relaxed drop-shadow-lg text-outline">
                     We provide reliable, affordable, and well-maintained vehicles to make your travel easy and convenient. Whether you need a car for a quick trip, business travel, or a weekend getaway, we offer flexible rental options and a smooth booking experience. Your comfort and safety are our priority—drive with confidence and enjoy the journey with us.
                 </p>
                 
@@ -101,7 +106,7 @@
                             </svg>
                         </span> -->
                     </button>
-                    <button onclick="scrollToContact()" class="group bg-gradient-to-r from-amber-500 via-amber-600 to-slate-800 hover:from-amber-600 hover:via-amber-700 hover:to-slate-900 text-white px-10 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl">
+                    <button onclick="scrollToContact()" class="group bg-gradient-to-r from-[#ffa600] via-[#ffb733] to-[#00202e] hover:from-[#ffb733] hover:via-[#ffc555] hover:to-[#013447] text-white px-10 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl">
                         <span class="flex items-center justify-center gap-2">
                             Contact Us
                             <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,7 +128,7 @@
         
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-20">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-amber-500 to-slate-900 rounded-full mb-6 drop-shadow-lg">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[#ffa600] to-[#00202e] rounded-full mb-6 drop-shadow-lg">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
                     </svg>
@@ -182,7 +187,7 @@
         
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-20">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-amber-500 to-slate-900 rounded-full mb-6 drop-shadow-lg">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[#ffa600] to-[#00202e] rounded-full mb-6 drop-shadow-lg">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
@@ -291,7 +296,7 @@
                             <p class="text-sm text-gray-500">Total Estimated Cost</p>
                             <p id="totalPrice" class="text-3xl font-bold text-blue-600">₱0.00</p>
                         </div>
-                        <button id="submitQuoteBtn" class="bg-gradient-to-r from-amber-500 via-amber-600 to-slate-800 hover:from-amber-600 hover:via-amber-700 hover:to-slate-900 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                        <button id="submitQuoteBtn" class="bg-gradient-to-r from-[#ffa600] via-[#ffb733] to-[#00202e] hover:from-[#ffb733] hover:via-[#ffc555] hover:to-[#013447] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                             Request Quote
                         </button>
                     </div>
@@ -361,7 +366,7 @@
                     </div>
                     
                     <div class="flex gap-3 pt-4">
-                        <button type="submit" class="flex-1 bg-gradient-to-r from-amber-500 via-amber-600 to-slate-800 hover:from-amber-600 hover:via-amber-700 hover:to-slate-900 text-white py-3 px-6 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-[#ffa600] via-[#ffb733] to-[#00202e] hover:from-[#ffb733] hover:via-[#ffc555] hover:to-[#013447] text-white py-3 px-6 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
                             Book Now
                         </button>
                         <button type="button" id="cancelBookCarBtn" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition">
