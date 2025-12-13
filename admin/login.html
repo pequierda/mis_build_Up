@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - TechSolutions</title>
+    <title>Admin Login - Emilpro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css" rel="stylesheet" />
 </head>
@@ -32,9 +32,13 @@
                     placeholder="Enter password">
             </div>
 
-            <button type="submit" 
-                class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 sm:py-3 rounded-lg transition duration-200 transform hover:scale-[1.02] text-sm sm:text-base">
-                Sign In
+            <button type="submit" id="loginSubmit"
+                class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 sm:py-3 rounded-lg transition duration-200 transform hover:scale-[1.02] text-sm sm:text-base flex items-center justify-center gap-2">
+                <svg id="loginSpinner" class="w-5 h-5 animate-spin hidden" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z"></path>
+                </svg>
+                <span id="loginText">Sign In</span>
             </button>
 
             <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-sm"></div>
