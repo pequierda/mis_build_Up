@@ -124,6 +124,18 @@ async function bookCar(carId, carName, pricePerDay) {
     const endDateInput = document.getElementById('endDate');
     const unavailableInfo = document.getElementById('unavailableDatesInfo');
     
+    // Fetch latest bookings for this car to avoid cross-car date leakage
+    let freshBookings = [];
+    try {
+        const res = await fetch(`api/bookings?carId=${encodeURIComponent(carId)}`);
+        if (res.ok) {
+            const data = await res.json();
+            freshBookings = Array.isArray(data) ? data : [];
+        }
+    } catch (err) {
+        console.warn('Failed to refresh bookings for car:', carId, err);
+    }
+    
     document.getElementById('bookCarId').value = carId;
     document.getElementById('bookCarName').textContent = carName;
     document.getElementById('bookCarPrice').textContent = pricePerDay || 'Price on request';
@@ -142,7 +154,8 @@ async function bookCar(carId, carName, pricePerDay) {
     
     modal.classList.remove('hidden');
     
-    const blockedBookings = (allBookingsData || []).filter(b =>
+    const sourceBookings = freshBookings.length > 0 ? freshBookings : (allBookingsData || []);
+    const blockedBookings = sourceBookings.filter(b =>
         b.carId === carId &&
         (b.status === 'confirmed' || b.status === 'completed') &&
         b.startDate && b.endDate
