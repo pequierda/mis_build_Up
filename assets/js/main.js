@@ -156,11 +156,13 @@ async function bookCar(carId, carName, pricePerDay) {
     
     // Only use bookings for this car; if fetch failed, do not mix in other cars
     const sourceBookings = freshBookings;
-    const blockedBookings = sourceBookings.filter(b =>
-        b.carId === carId &&
-        b.status === 'confirmed' &&
-        b.startDate && b.endDate
-    );
+    const blockedBookings = sourceBookings.filter(b => {
+        if (!b || !b.carId || !b.startDate || !b.endDate) return false;
+        const normalizedStatus = (b.status || '').toString().trim().toLowerCase();
+        const normalizedCarId = (b.carId || '').toString().trim();
+        return normalizedCarId === (carId || '').toString().trim() &&
+            normalizedStatus === 'confirmed';
+    });
 
     function showBlockedInfo() {
         if (!unavailableInfo) return;
