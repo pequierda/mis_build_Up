@@ -154,7 +154,8 @@ async function bookCar(carId, carName, pricePerDay) {
     
     modal.classList.remove('hidden');
     
-    const sourceBookings = freshBookings.length > 0 ? freshBookings : (allBookingsData || []);
+    // Only use bookings for this car; if fetch failed, do not mix in other cars
+    const sourceBookings = freshBookings;
     const blockedBookings = sourceBookings.filter(b =>
         b.carId === carId &&
         (b.status === 'confirmed' || b.status === 'completed') &&
