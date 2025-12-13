@@ -121,6 +121,7 @@ async function bookCar(carId, carName, pricePerDay) {
     const form = document.getElementById('bookCarForm');
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
+    const unavailableInfo = document.getElementById('unavailableDatesInfo');
     
     document.getElementById('bookCarId').value = carId;
     document.getElementById('bookCarName').textContent = carName;
@@ -133,9 +134,45 @@ async function bookCar(carId, carName, pricePerDay) {
     endDateInput.min = today;
     document.getElementById('bookCarTotalPrice').textContent = '₱0.00';
     document.getElementById('bookCarDays').textContent = '';
+    if (unavailableInfo) {
+        unavailableInfo.classList.add('hidden');
+        unavailableInfo.textContent = 'Some dates are unavailable for this car.';
+    }
     
     modal.classList.remove('hidden');
     
+    const blockedBookings = (allBookingsData || []).filter(b =>
+        b.carId === carId &&
+        (b.status === 'confirmed' || b.status === 'completed') &&
+        b.startDate && b.endDate
+    );
+
+    function showBlockedInfo() {
+        if (!unavailableInfo) return;
+        if (blockedBookings.length === 0) {
+            unavailableInfo.classList.add('hidden');
+            return;
+        }
+        const items = blockedBookings
+            .slice(0, 4)
+            .map(b => `${formatDate(b.startDate)} - ${formatDate(b.endDate)}`)
+            .join(', ');
+        unavailableInfo.textContent = `Unavailable: ${items}${blockedBookings.length > 4 ? ' +' + (blockedBookings.length - 4) + ' more' : ''}`;
+        unavailableInfo.classList.remove('hidden');
+    }
+    showBlockedInfo();
+
+    function isConflicting(startDate, endDate) {
+        if (!startDate || !endDate) return false;
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        return blockedBookings.some(b => {
+            const bStart = new Date(b.startDate);
+            const bEnd = new Date(b.endDate);
+            return start <= bEnd && end >= bStart;
+        });
+    }
+
     function calculateTotal() {
         const startDate = startDateInput.value;
         const endDate = endDateInput.value;
@@ -153,6 +190,13 @@ async function bookCar(carId, carName, pricePerDay) {
             const end = new Date(endDate);
             
             if (end > start) {
+                if (isConflicting(startDate, endDate)) {
+                    showNotification('Selected dates overlap with an existing booking.', 'error');
+                    endDateInput.value = '';
+                    document.getElementById('bookCarDays').textContent = 'Dates unavailable';
+                    document.getElementById('bookCarTotalPrice').textContent = '₱0.00';
+                    return;
+                }
                 const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
                 const total = price * days;
                 document.getElementById('bookCarDays').textContent = `${days} day${days !== 1 ? 's' : ''}`;
