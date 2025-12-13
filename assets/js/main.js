@@ -158,7 +158,7 @@ async function bookCar(carId, carName, pricePerDay) {
     const sourceBookings = freshBookings;
     const blockedBookings = sourceBookings.filter(b =>
         b.carId === carId &&
-        (b.status === 'confirmed' || b.status === 'completed') &&
+        b.status === 'confirmed' &&
         b.startDate && b.endDate
     );
 
@@ -172,7 +172,7 @@ async function bookCar(carId, carName, pricePerDay) {
             .slice(0, 4)
             .map(b => `${formatDate(b.startDate)} - ${formatDate(b.endDate)}`)
             .join(', ');
-        unavailableInfo.textContent = `Unavailable: ${items}${blockedBookings.length > 4 ? ' +' + (blockedBookings.length - 4) + ' more' : ''}`;
+        unavailableInfo.textContent = `Unavailable (confirmed bookings): ${items}${blockedBookings.length > 4 ? ' +' + (blockedBookings.length - 4) + ' more' : ''}`;
         unavailableInfo.classList.remove('hidden');
     }
     showBlockedInfo();
