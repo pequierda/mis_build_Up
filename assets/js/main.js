@@ -314,6 +314,20 @@ async function submitCarBooking(e) {
     const formattedStartDate = start.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const formattedEndDate = end.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     
+    const confirmMsg = [
+        'Please confirm your booking details:',
+        `Car: ${carName || 'Car'}`,
+        `Pickup: ${formattedStartDate}`,
+        `Return: ${formattedEndDate}`,
+        `Total: ${totalPrice || 'N/A'}`,
+        `Days: ${totalDays || `${days} day${days !== 1 ? 's' : ''}`}`
+    ].join('\\n');
+
+    if (!window.confirm(confirmMsg)) {
+        showNotification('Booking not submitted.', 'error');
+        return;
+    }
+    
     const messengerMessage = `I'm interested in your car rental services
 
 Full Name: ${customerName}
