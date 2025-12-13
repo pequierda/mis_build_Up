@@ -127,7 +127,7 @@ async function bookCar(carId, carName, pricePerDay) {
     // Fetch latest bookings for this car to avoid cross-car date leakage
     let freshBookings = [];
     try {
-        const res = await fetch(`api/bookings?carId=${encodeURIComponent(carId)}`);
+        const res = await fetch(`/api/bookings?carId=${encodeURIComponent(carId)}`);
         if (res.ok) {
             const data = await res.json();
             freshBookings = Array.isArray(data) ? data : [];
