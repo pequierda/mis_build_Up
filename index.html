@@ -393,6 +393,50 @@
                 </form>
             </div>
         </div>
+
+    <!-- Booking Confirm Modal -->
+    <div id="bookingConfirmModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-amber-100 overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-[#00202e] via-[#002f45] to-[#ffa600]/40 text-white flex justify-between items-center">
+                <div>
+                    <p class="text-xs uppercase tracking-[0.1em] text-amber-200">Please confirm</p>
+                    <h3 class="text-xl font-bold">Review your booking</h3>
+                </div>
+                <button id="closeBookingConfirm" class="p-2 rounded-full hover:bg-white/10 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="px-6 py-5 space-y-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold">!</div>
+                    <div class="text-sm text-gray-700">
+                        <p class="font-semibold text-gray-900 mb-1">Are you sure the information is correct?</p>
+                        <p>Please verify dates and contact details before submitting.</p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2 text-sm text-gray-800">
+                    <div class="flex justify-between gap-2"><span class="font-semibold">Car:</span><span id="confirmCar"></span></div>
+                    <div class="flex justify-between gap-2"><span class="font-semibold">Pickup:</span><span id="confirmPickup"></span></div>
+                    <div class="flex justify-between gap-2"><span class="font-semibold">Return:</span><span id="confirmReturn"></span></div>
+                    <div class="flex justify-between gap-2"><span class="font-semibold">Total Days:</span><span id="confirmDays"></span></div>
+                    <div class="flex justify-between gap-2"><span class="font-semibold">Total Amount:</span><span id="confirmTotal"></span></div>
+                    <div class="flex justify-between gap-2"><span class="font-semibold">Name:</span><span id="confirmName"></span></div>
+                    <div class="flex justify-between gap-2"><span class="font-semibold">Email:</span><span id="confirmEmail"></span></div>
+                    <div class="flex justify-between gap-2"><span class="font-semibold">Phone:</span><span id="confirmPhone"></span></div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button id="confirmBookingBtn" class="flex-1 bg-gradient-to-r from-[#ffa600] via-[#ffb733] to-[#00202e] hover:from-[#ffb733] hover:via-[#ffc555] hover:to-[#013447] text-white py-3 px-6 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        Yes, submit booking
+                    </button>
+                    <button id="cancelBookingBtn" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition">
+                        Review again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>

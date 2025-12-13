@@ -7,6 +7,7 @@ function formatDate(dateStr) {
 
 let allCarsData = [];
 let allBookingsData = [];
+let pendingBookingData = null;
 
 async function loadServices() {
     const servicesGrid = document.getElementById('servicesGrid');
@@ -282,6 +283,7 @@ async function loadContactInfoForBooking(serviceTitle = '') {
 
 function closeBookCarModal() {
     document.getElementById('bookCarModal').classList.add('hidden');
+    closeBookingConfirmModal();
 }
 
 async function submitCarBooking(e) {
@@ -314,81 +316,106 @@ async function submitCarBooking(e) {
     const formattedStartDate = start.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const formattedEndDate = end.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     
-    const confirmMsg = [
-        'Please confirm your booking details:',
-        `Car: ${carName || 'Car'}`,
-        `Pickup: ${formattedStartDate}`,
-        `Return: ${formattedEndDate}`,
-        `Total: ${totalPrice || 'N/A'}`,
-        `Days: ${totalDays || `${days} day${days !== 1 ? 's' : ''}`}`
-    ].join('\\n');
+    pendingBookingData = {
+        carId,
+        carName,
+        customerName,
+        customerEmail,
+        customerPhone,
+        startDate,
+        endDate,
+        formattedStartDate,
+        formattedEndDate,
+        totalPrice,
+        totalDaysText: totalDays || `${days} day${days !== 1 ? 's' : ''}`,
+        daysNumber: days
+    };
 
-    if (!window.confirm(confirmMsg)) {
-        showNotification('Booking not submitted.', 'error');
-        return;
-    }
+    openBookingConfirmModal(pendingBookingData);
+}
+
+function openBookingConfirmModal(data) {
+    const modal = document.getElementById('bookingConfirmModal');
+    if (!modal || !data) return;
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value || '';
+    };
+    setText('confirmCar', data.carName || 'Car');
+    setText('confirmPickup', data.formattedStartDate || '');
+    setText('confirmReturn', data.formattedEndDate || '');
+    setText('confirmTotal', data.totalPrice || 'N/A');
+    setText('confirmDays', data.totalDaysText || '');
+    setText('confirmName', data.customerName || '');
+    setText('confirmEmail', data.customerEmail || '');
+    setText('confirmPhone', data.customerPhone || '');
+    modal.classList.remove('hidden');
+}
+
+function closeBookingConfirmModal() {
+    const modal = document.getElementById('bookingConfirmModal');
+    if (modal) modal.classList.add('hidden');
+    pendingBookingData = null;
+}
+
+async function finalizeBookingSubmission() {
+    const data = pendingBookingData;
+    if (!data) return;
     
     const messengerMessage = `I'm interested in your car rental services
 
-Full Name: ${customerName}
+Full Name: ${data.customerName}
 
-Email: ${customerEmail}
+Email: ${data.customerEmail}
 
-Phone Number: ${customerPhone}
+Phone Number: ${data.customerPhone}
 
-Pickup Date: ${formattedStartDate}
+Pickup Date: ${data.formattedStartDate}
 
-Return Date: ${formattedEndDate}
+Return Date: ${data.formattedEndDate}
 
-Total Days: ${days} day${days !== 1 ? 's' : ''}
+Total Days: ${data.daysNumber} day${data.daysNumber !== 1 ? 's' : ''}
 
-Total Amount: ${totalPrice}
+Total Amount: ${data.totalPrice}
 
-Car: ${carName}`;
+Car: ${data.carName}`;
     
     const encodedMessage = encodeURIComponent(messengerMessage);
     const messengerUrl = `https://m.me/testSiteArea?text=${encodedMessage}`;
     
     try {
-        // Save booking to API
         const response = await fetch('api/bookings', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                carId,
-                customerName,
-                customerEmail,
-                customerPhone,
-                startDate,
-                endDate,
-                totalPrice
+                carId: data.carId,
+                customerName: data.customerName,
+                customerEmail: data.customerEmail,
+                customerPhone: data.customerPhone,
+                startDate: data.startDate,
+                endDate: data.endDate,
+                totalPrice: data.totalPrice
             })
         });
         
-        const result = await response.json();
+        await response.json();
         
-        if (result.success) {
-            showNotification('Opening Messenger to send your booking details...', 'success');
-            window.open(messengerUrl, '_blank');
-            setTimeout(() => {
-                closeBookCarModal();
-            }, 1000);
-        } else {
-            showNotification('Opening Messenger to send your booking details...', 'success');
-            window.open(messengerUrl, '_blank');
-            setTimeout(() => {
-                closeBookCarModal();
-            }, 1000);
-        }
+        showNotification('Opening Messenger to send your booking details...', 'success');
+        window.open(messengerUrl, '_blank');
+        setTimeout(() => {
+            closeBookCarModal();
+            closeBookingConfirmModal();
+        }, 800);
     } catch (error) {
         console.error('Error submitting booking:', error);
         showNotification('Opening Messenger to send your booking details...', 'success');
         window.open(messengerUrl, '_blank');
         setTimeout(() => {
             closeBookCarModal();
-        }, 1000);
+            closeBookingConfirmModal();
+        }, 800);
     }
 }
 
@@ -1189,6 +1216,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (bookCarForm) {
         bookCarForm.addEventListener('submit', submitCarBooking);
     }
+    
+    const confirmBookingBtn = document.getElementById('confirmBookingBtn');
+    const cancelBookingBtn = document.getElementById('cancelBookingBtn');
+    const closeBookingConfirm = document.getElementById('closeBookingConfirm');
+    if (confirmBookingBtn) confirmBookingBtn.addEventListener('click', finalizeBookingSubmission);
+    if (cancelBookingBtn) cancelBookingBtn.addEventListener('click', closeBookingConfirmModal);
+    if (closeBookingConfirm) closeBookingConfirm.addEventListener('click', closeBookingConfirmModal);
     
     // Search functionality event listeners
     const searchInput = document.getElementById('productSearchInput');
