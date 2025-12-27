@@ -522,7 +522,7 @@ function renderCalendar() {
                 </div>
                 
                 ${dayBookings.length > 0 ? `
-                    <div id="tooltip-${uniqueId}" class="hidden sm:block absolute left-full ml-2 top-0 w-64 sm:w-72 bg-gray-900 text-white text-xs rounded-lg shadow-2xl p-3 sm:p-4 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none max-h-96 overflow-y-auto">
+                    <div id="tooltip-${uniqueId}" class="hidden sm:block absolute left-full ml-2 top-0 w-64 sm:w-72 bg-gray-900 text-white text-xs rounded-lg shadow-2xl p-3 sm:p-4 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 max-h-[70vh] overflow-y-auto">
                         <div class="space-y-2 sm:space-y-3">
                             ${dayBookings.map(booking => {
                                 const car = allCars.find(c => c.id === booking.carId);
