@@ -606,16 +606,18 @@ function renderCalendar() {
                             t.classList.add('opacity-0', 'invisible');
                         });
                         if (tooltip) {
-                            tooltip.classList.remove('hidden');
-                            tooltip.classList.remove('opacity-0', 'invisible');
+                            tooltip.classList.remove('hidden', 'opacity-0', 'invisible', 'pointer-events-none');
                             tooltip.classList.add('opacity-100', 'visible', 'pointer-events-auto');
                             tooltip.style.position = 'fixed';
-                            const rect = dayCell.getBoundingClientRect();
-                            tooltip.style.left = '10px';
-                            tooltip.style.right = '10px';
-                            tooltip.style.top = `${rect.bottom + 10}px`;
+                            tooltip.style.left = '12px';
+                            tooltip.style.right = '12px';
+                            tooltip.style.top = '12vh';
+                            tooltip.style.bottom = '12px';
                             tooltip.style.width = 'auto';
-                            tooltip.style.maxWidth = 'calc(100vw - 20px)';
+                            tooltip.style.maxWidth = 'calc(100vw - 24px)';
+                            tooltip.style.maxHeight = '70vh';
+                            tooltip.style.overflowY = 'auto';
+                            tooltip.style.zIndex = '9999';
                         }
                     }
                 });
