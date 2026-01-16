@@ -106,7 +106,7 @@
 
         <!-- Filters -->
         <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-5 mb-6">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <div>
                     <label class="block text-xs text-gray-600 mb-1">Status</label>
                     <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent">
@@ -128,6 +128,12 @@
                 <div>
                     <label class="block text-xs text-gray-600 mb-1">Search</label>
                     <input type="text" id="searchBookings" placeholder="Customer, email, car" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-600 mb-1">Car</label>
+                    <select id="carFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        <option value="all">All Cars</option>
+                    </select>
                 </div>
             </div>
         </div>

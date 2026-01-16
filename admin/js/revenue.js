@@ -83,10 +83,31 @@ async function loadRevenueData() {
 
         renderSummary();
         renderTable();
+        populateCarFilter();
     } catch (err) {
         console.error('Error loading revenue data:', err);
         setErrorState('Failed to load bookings. Please refresh.');
         showNotification('Failed to load revenue data', 'error');
+    }
+}
+
+function populateCarFilter() {
+    const select = document.getElementById('carFilter');
+    if (!select) return;
+    const current = select.value || 'all';
+    const options = ['<option value="all">All Cars</option>'];
+    const sorted = [...allCars].sort((a, b) => {
+        const nameA = (a.name || `${a.make || ''} ${a.model || ''}`).toLowerCase();
+        const nameB = (b.name || `${b.make || ''} ${b.model || ''}`).toLowerCase();
+        return nameA.localeCompare(nameB);
+    });
+    sorted.forEach(car => {
+        const carName = car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car';
+        options.push(`<option value="${car.id}">${carName}</option>`);
+    });
+    select.innerHTML = options.join('');
+    if (current && options.some(o => o.includes(`value="${current}"`))) {
+        select.value = current;
     }
 }
 
@@ -112,6 +133,7 @@ function renderSummary(filteredList) {
 function applyFilters() {
     const status = document.getElementById('statusFilter')?.value || 'all';
     const search = (document.getElementById('searchBookings')?.value || '').toLowerCase();
+    const carFilter = document.getElementById('carFilter')?.value || 'all';
     const from = document.getElementById('dateFrom')?.value || '';
     const to = document.getElementById('dateTo')?.value || '';
     const fromDate = from ? new Date(from) : null;
@@ -120,6 +142,7 @@ function applyFilters() {
 
     return allBookings.filter(b => {
         if (status !== 'all' && b.status !== status) return false;
+        if (carFilter !== 'all' && b.carId !== carFilter) return false;
 
         if (fromDate || toDate) {
             const created = b.createdAt ? new Date(b.createdAt) : null;
@@ -278,10 +301,12 @@ function bindEvents() {
 
     const statusFilter = document.getElementById('statusFilter');
     const searchInput = document.getElementById('searchBookings');
+    const carFilter = document.getElementById('carFilter');
     const dateFrom = document.getElementById('dateFrom');
     const dateTo = document.getElementById('dateTo');
 
     if (statusFilter) statusFilter.addEventListener('change', () => { currentPage = 1; renderTable(); });
+    if (carFilter) carFilter.addEventListener('change', () => { currentPage = 1; renderTable(); });
     if (dateFrom) dateFrom.addEventListener('change', () => { currentPage = 1; renderTable(); });
     if (dateTo) dateTo.addEventListener('change', () => { currentPage = 1; renderTable(); });
 
