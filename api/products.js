@@ -17,6 +17,21 @@ export default async function handler(req, res) {
         });
     }
 
+    async function saveCars(cars) {
+        await fetch(`${UPSTASH_URL}/pipeline`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${UPSTASH_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                commands: [
+                    ['SET', 'cars_list', JSON.stringify(cars)]
+                ]
+            })
+        });
+    }
+
     try {
         if (req.method === 'GET') {
             const response = await fetch(`${UPSTASH_URL}/get/cars_list`, {
@@ -87,12 +102,7 @@ export default async function handler(req, res) {
                 cars.push(car);
             }
 
-            await fetch(`${UPSTASH_URL}/set/cars_list/${encodeURIComponent(JSON.stringify(cars))}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${UPSTASH_TOKEN}`
-                }
-            });
+            await saveCars(cars);
 
             return res.status(200).json({
                 success: true,
@@ -119,12 +129,7 @@ export default async function handler(req, res) {
 
             cars = cars.filter(c => c.id !== id);
 
-            await fetch(`${UPSTASH_URL}/set/cars_list/${encodeURIComponent(JSON.stringify(cars))}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${UPSTASH_TOKEN}`
-                }
-            });
+            await saveCars(cars);
 
             return res.status(200).json({
                 success: true,
