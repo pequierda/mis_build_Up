@@ -144,7 +144,13 @@ async function bookCar(carId, carName, pricePerDay, deliveryFeeRaw = '0') {
     document.getElementById('bookCarPrice').textContent = pricePerDay || 'Price on request';
     const currencyMatch = pricePerDay ? pricePerDay.match(/[$₱€£¥]/) : null;
     const currencySymbol = currencyMatch ? currencyMatch[0] : '₱';
-    const deliveryFeeNumber = parseFloat((deliveryFeeRaw || '0').toString().replace(/[^0-9.,]/g, '').replace(/,/g, '')) || 0;
+    const allCarsFallback = (typeof allCarsData !== 'undefined' && Array.isArray(allCarsData)) ? allCarsData : [];
+    const carFallback = allCarsFallback.find(c => c.id === carId);
+    const parsedDeliveryFee = (raw) => parseFloat((raw || '0').toString().replace(/[^0-9.,]/g, '').replace(/,/g, '')) || 0;
+    let deliveryFeeNumber = parsedDeliveryFee(deliveryFeeRaw);
+    if (!deliveryFeeNumber && carFallback && carFallback.deliveryFee) {
+        deliveryFeeNumber = parsedDeliveryFee(carFallback.deliveryFee);
+    }
     deliveryFeeInput.value = deliveryFeeNumber;
     if (deliveryFeeDisplay) {
         deliveryFeeDisplay.textContent = `${currencySymbol}${deliveryFeeNumber.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
