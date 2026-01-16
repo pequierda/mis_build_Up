@@ -8,6 +8,7 @@ function formatDate(dateStr) {
 let allCarsData = [];
 let allBookingsData = [];
 let pendingBookingData = null;
+let transmissionFilterValue = 'all';
 
 async function loadServices() {
     const servicesGrid = document.getElementById('servicesGrid');
@@ -31,7 +32,7 @@ async function loadServices() {
         allCarsData = Array.isArray(cars) ? cars : [];
         allBookingsData = Array.isArray(bookings) ? bookings : [];
         renderCars();
-        bindTransmissionFilter();
+        setupTransmissionFilter();
     } catch (error) {
         console.error('Error loading cars:', error);
         servicesGrid.innerHTML = '<div class="col-span-full text-center text-red-500 py-12"><p>Failed to load cars. Please try again later.</p></div>';
@@ -39,21 +40,39 @@ async function loadServices() {
     }
 }
 
-function bindTransmissionFilter() {
-    const filter = document.getElementById('transmissionFilter');
-    if (!filter) return;
-    filter.addEventListener('change', () => renderCars());
+function setupTransmissionFilter() {
+    const chips = document.querySelectorAll('[data-transmission-filter]');
+    if (!chips || chips.length === 0) return;
+    const setActive = (value) => {
+        transmissionFilterValue = value;
+        chips.forEach(chip => {
+            const isActive = chip.dataset.transmissionFilter === value;
+            chip.classList.toggle('bg-amber-50', isActive);
+            chip.classList.toggle('text-amber-800', isActive);
+            chip.classList.toggle('border-amber-200', isActive);
+            chip.classList.toggle('shadow-sm', isActive);
+            chip.classList.toggle('bg-white', !isActive);
+            chip.classList.toggle('text-gray-700', !isActive);
+            chip.classList.toggle('border-gray-200', !isActive);
+        });
+    };
+    setActive(transmissionFilterValue);
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            setActive(chip.dataset.transmissionFilter || 'all');
+            renderCars();
+        });
+    });
 }
 
 async function renderCars() {
     const servicesGrid = document.getElementById('servicesGrid');
     if (!servicesGrid) return;
 
-    const transmissionFilter = document.getElementById('transmissionFilter')?.value || 'all';
     const filteredCars = allCarsData.filter(car => {
-        if (transmissionFilter === 'all') return true;
+        if (transmissionFilterValue === 'all') return true;
         const t = (car.transmission || '').toLowerCase();
-        return t === transmissionFilter;
+        return t === transmissionFilterValue;
     });
 
     if (!filteredCars || filteredCars.length === 0) {

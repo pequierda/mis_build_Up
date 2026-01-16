@@ -130,14 +130,18 @@
                     </p>
                 </div>
 
-                <div class="bg-white/80 backdrop-blur-sm border border-amber-100 rounded-xl p-4 shadow flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full lg:w-auto">
-                    <div class="flex flex-col">
-                        <label for="transmissionFilter" class="text-xs font-semibold text-gray-600 mb-1">Transmission</label>
-                        <select id="transmissionFilter" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent">
-                            <option value="all">All</option>
-                            <option value="automatic">Automatic</option>
-                            <option value="manual">Manual</option>
-                        </select>
+                <div class="bg-white/80 backdrop-blur-sm border border-amber-100 rounded-xl p-4 shadow flex flex-col gap-3 w-full lg:w-auto">
+                    <label class="text-xs font-semibold text-gray-600">Transmission</label>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" data-transmission-filter="all" class="transmission-chip px-3 py-2 rounded-lg border border-amber-200 text-sm font-medium bg-amber-50 text-amber-800 shadow-sm">
+                            All
+                        </button>
+                        <button type="button" data-transmission-filter="automatic" class="transmission-chip px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Automatic
+                        </button>
+                        <button type="button" data-transmission-filter="manual" class="transmission-chip px-3 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Manual
+                        </button>
                     </div>
                 </div>
             </div>
