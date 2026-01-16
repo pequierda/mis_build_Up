@@ -101,7 +101,7 @@ async function createCarCard(car, bookings = []) {
             ` : ''}
             
             <div class="border-t pt-4">
-                <button onclick="bookCar('${car.id}', '${carName}', '${displayPrice}')" class="w-full bg-gradient-to-r from-yellow-500 via-amber-500 to-black hover:from-yellow-600 hover:via-amber-600 hover:to-gray-800 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl group" ${car.available === false || car.onBooking === true ? 'disabled' : ''}>
+                <button onclick="bookCar('${car.id}', '${carName}', '${displayPrice}', '${car.deliveryFee || ''}')" class="w-full bg-gradient-to-r from-yellow-500 via-amber-500 to-black hover:from-yellow-600 hover:via-amber-600 hover:to-gray-800 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl group" ${car.available === false || car.onBooking === true ? 'disabled' : ''}>
                     <span class="flex items-center justify-center gap-2">
                         ${car.available === false ? 'Not Available' : (car.onBooking === true ? 'On Booking' : (isCurrentlyBooked ? 'Booked' : 'Rent Now'))}
                         <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,12 +117,15 @@ async function createCarCard(car, bookings = []) {
 // Default services are now initialized via API endpoint
 
 
-async function bookCar(carId, carName, pricePerDay) {
+async function bookCar(carId, carName, pricePerDay, deliveryFeeRaw = '0') {
     const modal = document.getElementById('bookCarModal');
     const form = document.getElementById('bookCarForm');
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
     const unavailableInfo = document.getElementById('unavailableDatesInfo');
+    const deliveryFeeInput = document.getElementById('deliveryFeeValue');
+    const deliveryFeeDisplay = document.getElementById('deliveryFeeDisplay');
+    const fulfillmentRadios = document.querySelectorAll('input[name="fulfillmentType"]');
     
     // Fetch latest bookings for this car to avoid cross-car date leakage
     let freshBookings = [];
@@ -139,6 +142,14 @@ async function bookCar(carId, carName, pricePerDay) {
     document.getElementById('bookCarId').value = carId;
     document.getElementById('bookCarName').textContent = carName;
     document.getElementById('bookCarPrice').textContent = pricePerDay || 'Price on request';
+    const currencyMatch = pricePerDay ? pricePerDay.match(/[$₱€£¥]/) : null;
+    const currencySymbol = currencyMatch ? currencyMatch[0] : '₱';
+    const deliveryFeeNumber = parseFloat((deliveryFeeRaw || '0').toString().replace(/[^0-9.,]/g, '').replace(/,/g, '')) || 0;
+    deliveryFeeInput.value = deliveryFeeNumber;
+    if (deliveryFeeDisplay) {
+        deliveryFeeDisplay.textContent = `${currencySymbol}${deliveryFeeNumber.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    }
+    fulfillmentRadios.forEach(r => { r.checked = r.value === 'pickup'; });
     
     const today = new Date().toISOString().split('T')[0];
     startDateInput.min = today;
@@ -195,6 +206,8 @@ async function bookCar(carId, carName, pricePerDay) {
         const endDate = endDateInput.value;
         const priceStr = pricePerDay ? pricePerDay.toString().replace(/[^0-9.,]/g, '') : '0';
         const price = parseFloat(priceStr.replace(/,/g, '')) || 0;
+        const isDelivery = document.querySelector('input[name="fulfillmentType"]:checked')?.value === 'delivery';
+        const deliveryFee = isDelivery ? (parseFloat(deliveryFeeInput.value) || 0) : 0;
         
         if (startDate) {
             const nextDay = new Date(startDate);
@@ -215,10 +228,8 @@ async function bookCar(carId, carName, pricePerDay) {
                     return;
                 }
                 const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-                const total = price * days;
+                const total = price * days + deliveryFee;
                 document.getElementById('bookCarDays').textContent = `${days} day${days !== 1 ? 's' : ''}`;
-                const currencyMatch = pricePerDay ? pricePerDay.match(/[$₱€£¥]/) : null;
-                const currencySymbol = currencyMatch ? currencyMatch[0] : '₱';
                 document.getElementById('bookCarTotalPrice').textContent = `${currencySymbol}${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             } else {
                 document.getElementById('bookCarDays').textContent = 'Invalid date range';
@@ -231,6 +242,10 @@ async function bookCar(carId, carName, pricePerDay) {
     endDateInput.removeEventListener('change', calculateTotal);
     startDateInput.addEventListener('change', calculateTotal);
     endDateInput.addEventListener('change', calculateTotal);
+    fulfillmentRadios.forEach(radio => {
+        radio.removeEventListener('change', calculateTotal);
+        radio.addEventListener('change', calculateTotal);
+    });
 }
 
 async function loadContactInfoForBooking(serviceTitle = '') {
@@ -314,6 +329,8 @@ async function submitCarBooking(e) {
     const endDate = document.getElementById('endDate').value;
     const totalPrice = document.getElementById('bookCarTotalPrice').textContent;
     const totalDays = document.getElementById('bookCarDays').textContent;
+    const fulfillmentType = document.querySelector('input[name="fulfillmentType"]:checked')?.value || 'pickup';
+    const deliveryFeeValue = parseFloat(document.getElementById('deliveryFeeValue').value) || 0;
     
     if (!carId || !customerName || !customerEmail || !customerPhone || !startDate || !endDate) {
         showNotification('Please fill in all required fields', 'error');
@@ -344,7 +361,10 @@ async function submitCarBooking(e) {
         formattedEndDate,
         totalPrice,
         totalDaysText: totalDays || `${days} day${days !== 1 ? 's' : ''}`,
-        daysNumber: days
+        daysNumber: days,
+        fulfillmentType,
+        deliveryFeeValue,
+        currency: (totalPrice.match(/[$₱€£¥]/) || [ '₱' ])[0]
     };
 
     openBookingConfirmModal(pendingBookingData);
@@ -362,6 +382,12 @@ function openBookingConfirmModal(data) {
     setText('confirmReturn', data.formattedEndDate || '');
     setText('confirmTotal', data.totalPrice || 'N/A');
     setText('confirmDays', data.totalDaysText || '');
+    const fulfillmentLabel = data.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup';
+    setText('confirmFulfillment', fulfillmentLabel);
+    const feeText = data.fulfillmentType === 'delivery' && data.deliveryFeeValue
+        ? `${data.currency || '₱'}${Number(data.deliveryFeeValue).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        : `${data.currency || '₱'}0.00`;
+    setText('confirmDeliveryFee', feeText);
     setText('confirmName', data.customerName || '');
     setText('confirmEmail', data.customerEmail || '');
     setText('confirmPhone', data.customerPhone || '');
@@ -392,6 +418,10 @@ Return Date: ${data.formattedEndDate}
 
 Total Days: ${data.daysNumber} day${data.daysNumber !== 1 ? 's' : ''}
 
+Fulfillment: ${data.fulfillmentType === 'delivery' ? 'Delivery' : 'Pickup'}
+
+Delivery Fee: ${data.fulfillmentType === 'delivery' ? `${data.currency || '₱'}${Number(data.deliveryFeeValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${data.currency || '₱'}0.00`}
+
 Total Amount: ${data.totalPrice}
 
 Car: ${data.carName}`;
@@ -412,7 +442,9 @@ Car: ${data.carName}`;
                 customerPhone: data.customerPhone,
                 startDate: data.startDate,
                 endDate: data.endDate,
-                totalPrice: data.totalPrice
+                totalPrice: data.totalPrice,
+                fulfillmentType: data.fulfillmentType,
+                deliveryFee: data.deliveryFeeValue
             })
         });
         

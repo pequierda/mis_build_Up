@@ -156,6 +156,7 @@ function createProductCard(car, bookings) {
                 <h3 class="text-lg font-bold text-gray-900 mb-2">${car.name}</h3>
                 ${car.make && car.model ? `<p class="text-gray-600 text-sm mb-1">${car.make} ${car.model}${car.year ? ` (${car.year})` : ''}</p>` : ''}
                 <p class="text-green-600 font-semibold mb-2">${car.pricePerDay || car.price || 'N/A'}</p>
+                ${car.deliveryFee ? `<p class="text-blue-600 text-xs mb-2">Delivery fee: ${car.deliveryFee}</p>` : ''}
                 ${car.description ? `<p class="text-gray-500 text-xs mb-2">${car.description.substring(0, 80)}...</p>` : ''}
                 <div class="flex items-center justify-center mt-2">
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${car.available === false ? 'bg-red-100 text-red-800' : (car.onBooking === true ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800')}">
@@ -372,6 +373,7 @@ async function editProduct(productId) {
         document.getElementById('productModel').value = car.model || '';
         document.getElementById('productYear').value = car.year || '';
         document.getElementById('productPricePerDay').value = car.pricePerDay || car.price || '';
+        document.getElementById('productDeliveryFee').value = car.deliveryFee || '';
         document.getElementById('productDescription').value = car.description || '';
         document.getElementById('productImageUrl').value = car.imageUrl || '';
         document.getElementById('productInStock').checked = car.available !== false;
@@ -534,6 +536,7 @@ async function handleFormSubmit(e) {
         model: document.getElementById('productModel').value.trim(),
         year: document.getElementById('productYear').value.trim(),
         pricePerDay: document.getElementById('productPricePerDay').value.trim(),
+        deliveryFee: document.getElementById('productDeliveryFee').value.trim(),
         description: document.getElementById('productDescription').value.trim(),
         imageUrl: document.getElementById('productImageUrl').value.trim() || '',
         category: currentEditingProduct?.category || 'self_drive',
