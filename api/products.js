@@ -18,32 +18,42 @@ export default async function handler(req, res) {
     }
 
     async function saveCars(cars) {
-        // Try simple path-based SET first (fast path)
-        let res = await fetch(`${UPSTASH_URL}/set/cars_list/${encodeURIComponent(JSON.stringify(cars))}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${UPSTASH_TOKEN}`
-            }
-        });
-        if (res.ok) return;
-
-        // Fallback to pipeline with JSON body (handles larger payloads)
-        res = await fetch(`${UPSTASH_URL}/pipeline`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${UPSTASH_TOKEN}`,
-                'Content-Type': 'application/json'
+        const payload = JSON.stringify(cars);
+        const attempts = [
+            {
+                url: `${UPSTASH_URL}/set/cars_list`,
+                options: {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${UPSTASH_TOKEN}`,
+                        'Content-Type': 'text/plain'
+                    },
+                    body: payload
+                }
             },
-            body: JSON.stringify({
-                commands: [
-                    ['SET', 'cars_list', JSON.stringify(cars)]
-                ]
-            })
-        });
-        if (!res.ok) {
-            const txt = await res.text();
-            throw new Error(`Upstash set failed: ${res.status} ${txt}`);
+            {
+                url: `${UPSTASH_URL}/set/cars_list/${encodeURIComponent(payload)}`,
+                options: {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${UPSTASH_TOKEN}`
+                    }
+                }
+            }
+        ];
+
+        let lastError = null;
+        for (const attempt of attempts) {
+            try {
+                const res = await fetch(attempt.url, attempt.options);
+                if (res.ok) return;
+                const txt = await res.text();
+                lastError = `Attempt ${attempt.url} failed: ${res.status} ${txt}`;
+            } catch (err) {
+                lastError = `Attempt ${attempt.url} threw: ${err.message}`;
+            }
         }
+        throw new Error(lastError || 'Failed to save cars');
     }
 
     try {
