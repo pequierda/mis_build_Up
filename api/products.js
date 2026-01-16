@@ -78,11 +78,13 @@ export default async function handler(req, res) {
                 cars.push(car);
             }
 
-            await fetch(`${UPSTASH_URL}/set/cars_list/${encodeURIComponent(JSON.stringify(cars))}`, {
+            await fetch(`${UPSTASH_URL}/set/cars_list`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${UPSTASH_TOKEN}`
-                }
+                    'Authorization': `Bearer ${UPSTASH_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ value: JSON.stringify(cars) })
             });
 
             return res.status(200).json({
@@ -110,11 +112,13 @@ export default async function handler(req, res) {
 
             cars = cars.filter(c => c.id !== id);
 
-            await fetch(`${UPSTASH_URL}/set/cars_list/${encodeURIComponent(JSON.stringify(cars))}`, {
+            await fetch(`${UPSTASH_URL}/set/cars_list`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${UPSTASH_TOKEN}`
-                }
+                    'Authorization': `Bearer ${UPSTASH_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ value: JSON.stringify(cars) })
             });
 
             return res.status(200).json({
