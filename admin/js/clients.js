@@ -375,6 +375,15 @@ function removeImageInput(button) {
 // ===== FORM HANDLING =====
 async function handleFormSubmit(e) {
     e.preventDefault();
+    const submitBtn = document.getElementById('saveClientBtn');
+    const spinner = document.getElementById('saveClientSpinner');
+    const btnText = document.getElementById('saveClientText');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+    }
+    if (spinner) spinner.classList.remove('hidden');
+    if (btnText) btnText.textContent = 'Saving...';
     
     // Collect images
     const imageInputs = document.querySelectorAll('input[name="image"]');
@@ -398,6 +407,12 @@ async function handleFormSubmit(e) {
     
     if (!formData.images || formData.images.length === 0) {
         showNotification('At least one client image is required', 'error');
+        if (spinner) spinner.classList.add('hidden');
+        if (btnText) btnText.textContent = 'Save Client';
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
         return;
     }
     
@@ -427,6 +442,13 @@ async function handleFormSubmit(e) {
     } catch (error) {
         console.error('Error saving client:', error);
         showNotification('Failed to save client: ' + error.message, 'error');
+    } finally {
+        if (spinner) spinner.classList.add('hidden');
+        if (btnText) btnText.textContent = 'Save Client';
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+        }
     }
 }
 

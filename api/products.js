@@ -18,13 +18,27 @@ export default async function handler(req, res) {
     }
 
     async function saveCars(cars) {
-        const res = await fetch(`${UPSTASH_URL}/set/cars_list`, {
+        // Try simple path-based SET first (fast path)
+        let res = await fetch(`${UPSTASH_URL}/set/cars_list/${encodeURIComponent(JSON.stringify(cars))}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${UPSTASH_TOKEN}`
+            }
+        });
+        if (res.ok) return;
+
+        // Fallback to pipeline with JSON body (handles larger payloads)
+        res = await fetch(`${UPSTASH_URL}/pipeline`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${UPSTASH_TOKEN}`,
-                'Content-Type': 'text/plain'
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify(cars)
+            body: JSON.stringify({
+                commands: [
+                    ['SET', 'cars_list', JSON.stringify(cars)]
+                ]
+            })
         });
         if (!res.ok) {
             const txt = await res.text();
