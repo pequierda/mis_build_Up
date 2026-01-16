@@ -4,8 +4,15 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     const errorMessage = document.getElementById('errorMessage');
+    const submitBtn = document.getElementById('loginSubmit');
+    const spinner = document.getElementById('loginSpinner');
+    const submitText = document.getElementById('loginText');
     
     errorMessage.classList.add('hidden');
+    submitBtn.disabled = true;
+    submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+    spinner.classList.remove('hidden');
+    submitText.textContent = 'Signing in...';
     
     try {
         const response = await fetch('../api/admin/auth?action=login', {
@@ -19,7 +26,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         }
         
         const responseText = await response.text();
-       // console.log('Response text:', responseText); // Debug log
         
         if (!responseText.trim()) {
             throw new Error('Empty response from server');
@@ -28,7 +34,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         const result = JSON.parse(responseText);
         
         if (result.success) {
-            // Store auth token
             localStorage.setItem('admin_token', result.token);
             window.location.href = 'dashboard.html';
         } else {
@@ -39,6 +44,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         console.error('Login error:', error);
         errorMessage.textContent = `Please check your credentials and try again.`;
         errorMessage.classList.remove('hidden');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+        spinner.classList.add('hidden');
+        submitText.textContent = 'Sign In';
     }
 });
 
