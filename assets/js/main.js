@@ -41,28 +41,41 @@ async function loadServices() {
 }
 
 function setupTransmissionFilter() {
-    const chips = document.querySelectorAll('[data-transmission-filter]');
-    if (!chips || chips.length === 0) return;
-    const setActive = (value) => {
-        transmissionFilterValue = value;
-        chips.forEach(chip => {
-            const isActive = chip.dataset.transmissionFilter === value;
-            chip.classList.toggle('bg-amber-50', isActive);
-            chip.classList.toggle('text-amber-800', isActive);
-            chip.classList.toggle('border-amber-200', isActive);
-            chip.classList.toggle('shadow-sm', isActive);
-            chip.classList.toggle('bg-white', !isActive);
-            chip.classList.toggle('text-gray-700', !isActive);
-            chip.classList.toggle('border-gray-200', !isActive);
-        });
+    const toggle = document.getElementById('transmissionToggle');
+    const toggleText = document.getElementById('transmissionToggleText');
+    const label = document.getElementById('transmissionLabel');
+    const allBtn = document.getElementById('transmissionAllBtn');
+    if (!toggle || !toggleText || !label || !allBtn) return;
+
+    const updateUI = () => {
+        if (transmissionFilterValue === 'all') {
+            label.textContent = 'All';
+            toggle.checked = false;
+            toggleText.textContent = 'Manual';
+        } else if (transmissionFilterValue === 'automatic') {
+            label.textContent = 'Automatic';
+            toggle.checked = true;
+            toggleText.textContent = 'Automatic';
+        } else {
+            label.textContent = 'Manual';
+            toggle.checked = false;
+            toggleText.textContent = 'Manual';
+        }
     };
-    setActive(transmissionFilterValue);
-    chips.forEach(chip => {
-        chip.addEventListener('click', () => {
-            setActive(chip.dataset.transmissionFilter || 'all');
-            renderCars();
-        });
+
+    toggle.addEventListener('change', () => {
+        transmissionFilterValue = toggle.checked ? 'automatic' : 'manual';
+        updateUI();
+        renderCars();
     });
+
+    allBtn.addEventListener('click', () => {
+        transmissionFilterValue = 'all';
+        updateUI();
+        renderCars();
+    });
+
+    updateUI();
 }
 
 async function renderCars() {
