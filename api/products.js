@@ -48,6 +48,7 @@ export default async function handler(req, res) {
                 year: req.body.year || '',
                 price: req.body.price || '',
                 pricePerDay: req.body.pricePerDay || '',
+                deliveryFee: req.body.deliveryFee || '',
                 description: req.body.description || '',
                 imageUrl: req.body.imageUrl || '',
                 specifications: req.body.specifications || [],
