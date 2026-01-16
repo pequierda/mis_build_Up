@@ -155,6 +155,7 @@ function createProductCard(car, bookings) {
                 ${car.imageUrl ? `<img src="${car.imageUrl}" alt="${car.name}" class="w-full h-32 object-cover rounded-lg mb-4">` : ''}
                 <h3 class="text-lg font-bold text-gray-900 mb-2">${car.name}</h3>
                 ${car.make && car.model ? `<p class="text-gray-600 text-sm mb-1">${car.make} ${car.model}${car.year ? ` (${car.year})` : ''}</p>` : ''}
+                ${car.transmission ? `<p class="text-gray-500 text-xs mb-1 capitalize">Transmission: ${car.transmission}</p>` : ''}
                 <p class="text-green-600 font-semibold mb-2">${car.pricePerDay || car.price || 'N/A'}</p>
                 ${car.deliveryFee ? `<p class="text-blue-600 text-xs mb-2">Delivery fee: ${car.deliveryFee}</p>` : ''}
                 ${car.description ? `<p class="text-gray-500 text-xs mb-2">${car.description.substring(0, 80)}...</p>` : ''}
@@ -372,6 +373,11 @@ async function editProduct(productId) {
         document.getElementById('productMake').value = car.make || '';
         document.getElementById('productModel').value = car.model || '';
         document.getElementById('productYear').value = car.year || '';
+        const transmission = (car.transmission || 'automatic').toLowerCase();
+        const transmissionInputs = document.querySelectorAll('input[name="productTransmission"]');
+        transmissionInputs.forEach(input => {
+            input.checked = input.value === transmission;
+        });
         document.getElementById('productPricePerDay').value = car.pricePerDay || car.price || '';
         document.getElementById('productDeliveryFee').value = car.deliveryFee || '';
         document.getElementById('productDescription').value = car.description || '';
@@ -535,6 +541,7 @@ async function handleFormSubmit(e) {
         make: document.getElementById('productMake').value.trim(),
         model: document.getElementById('productModel').value.trim(),
         year: document.getElementById('productYear').value.trim(),
+        transmission: (document.querySelector('input[name="productTransmission"]:checked')?.value || 'automatic').toLowerCase(),
         pricePerDay: document.getElementById('productPricePerDay').value.trim(),
         deliveryFee: document.getElementById('productDeliveryFee').value.trim(),
         description: document.getElementById('productDescription').value.trim(),

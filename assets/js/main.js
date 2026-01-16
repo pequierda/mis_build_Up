@@ -31,6 +31,7 @@ async function loadServices() {
         allCarsData = Array.isArray(cars) ? cars : [];
         allBookingsData = Array.isArray(bookings) ? bookings : [];
         renderCars();
+        bindTransmissionFilter();
     } catch (error) {
         console.error('Error loading cars:', error);
         servicesGrid.innerHTML = '<div class="col-span-full text-center text-red-500 py-12"><p>Failed to load cars. Please try again later.</p></div>';
@@ -38,11 +39,22 @@ async function loadServices() {
     }
 }
 
+function bindTransmissionFilter() {
+    const filter = document.getElementById('transmissionFilter');
+    if (!filter) return;
+    filter.addEventListener('change', () => renderCars());
+}
+
 async function renderCars() {
     const servicesGrid = document.getElementById('servicesGrid');
     if (!servicesGrid) return;
 
-    const filteredCars = allCarsData;
+    const transmissionFilter = document.getElementById('transmissionFilter')?.value || 'all';
+    const filteredCars = allCarsData.filter(car => {
+        if (transmissionFilter === 'all') return true;
+        const t = (car.transmission || '').toLowerCase();
+        return t === transmissionFilter;
+    });
 
     if (!filteredCars || filteredCars.length === 0) {
         servicesGrid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12"><p>No cars found for this category.</p></div>';
@@ -66,6 +78,7 @@ async function createCarCard(car, bookings = []) {
     const iconSvg = `<img src="logo/me.png" alt="Car" class="w-12 h-12 object-contain">`;
     const carName = car.name || `${car.make || ''} ${car.model || ''}`.trim() || 'Car';
     const displayPrice = formatPrice(car.pricePerDay || car.price);
+    const transmission = car.transmission ? car.transmission.charAt(0).toUpperCase() + car.transmission.slice(1) : '';
     const today = new Date();
     const carBookings = (bookings || []).filter(b => b.carId === car.id && b.status !== 'cancelled' && b.status !== 'completed');
     const currentBookings = carBookings
@@ -83,6 +96,7 @@ async function createCarCard(car, bookings = []) {
             <div class="text-yellow-600 mb-4">${iconSvg}</div>
             <h3 class="text-2xl font-bold text-gray-900 mb-3">${carName}</h3>
             ${car.make && car.model ? `<p class="text-gray-600 text-sm mb-2">${car.make} ${car.model}${car.year ? ` (${car.year})` : ''}</p>` : ''}
+            ${transmission ? `<p class="text-gray-500 text-sm mb-2">Transmission: ${transmission}</p>` : ''}
             <p class="text-green-600 font-semibold mb-3">${displayPrice} / day</p>
             ${car.description ? `<p class="text-gray-600 mb-6">${car.description}</p>` : ''}
             

@@ -110,25 +110,37 @@
         </div>
         
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-20">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[#ffa600] to-[#00202e] rounded-full mb-6 drop-shadow-lg">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 16v-4a1 1 0 00-1-1h-1l-2-5H8L6 11H5a1 1 0 00-1 1v4"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M7 16h10"/>
-                        <circle cx="7" cy="16" r="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-                        <circle cx="17" cy="16" r="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-                    </svg>
+            <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-20">
+                <div class="text-center lg:text-left">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[#ffa600] to-[#00202e] rounded-full mb-6 drop-shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 16v-4a1 1 0 00-1-1h-1l-2-5H8L6 11H5a1 1 0 00-1 1v4"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M7 16h10"/>
+                            <circle cx="7" cy="16" r="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                            <circle cx="17" cy="16" r="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-5xl font-bold mb-6">
+                        <span class="bg-gradient-to-r from-amber-500 via-amber-400 to-slate-800 bg-clip-text text-transparent">
+                            Our Car Rental Fleet
+                        </span>
+                    </h2>
+                    <p class="text-xl text-gray-700 max-w-3xl mx-auto">
+                        Choose from our wide selection of quality vehicles for your next adventure
+                    </p>
                 </div>
-                <h2 class="text-5xl font-bold mb-6">
-                    <span class="bg-gradient-to-r from-amber-500 via-amber-400 to-slate-800 bg-clip-text text-transparent">
-                        Our Car Rental Fleet
-                    </span>
-                </h2>
-                <p class="text-xl text-gray-700 max-w-3xl mx-auto">
-                    Choose from our wide selection of quality vehicles for your next adventure
-                </p>
-            </div>
 
+                <div class="bg-white/80 backdrop-blur-sm border border-amber-100 rounded-xl p-4 shadow flex flex-col sm:flex-row gap-3 items-stretch sm:items-center w-full lg:w-auto">
+                    <div class="flex flex-col">
+                        <label for="transmissionFilter" class="text-xs font-semibold text-gray-600 mb-1">Transmission</label>
+                        <select id="transmissionFilter" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+                            <option value="all">All</option>
+                            <option value="automatic">Automatic</option>
+                            <option value="manual">Manual</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="servicesGrid">
                 <!-- Services will be loaded here via JavaScript -->

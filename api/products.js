@@ -46,6 +46,7 @@ export default async function handler(req, res) {
                 make: req.body.make || '',
                 model: req.body.model || '',
                 year: req.body.year || '',
+                transmission: req.body.transmission || 'automatic',
                 price: req.body.price || '',
                 pricePerDay: req.body.pricePerDay || '',
                 deliveryFee: req.body.deliveryFee || '',
