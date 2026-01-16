@@ -18,18 +18,18 @@ export default async function handler(req, res) {
     }
 
     async function saveCars(cars) {
-        await fetch(`${UPSTASH_URL}/pipeline`, {
+        const res = await fetch(`${UPSTASH_URL}/set/cars_list`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${UPSTASH_TOKEN}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'text/plain'
             },
-            body: JSON.stringify({
-                commands: [
-                    ['SET', 'cars_list', JSON.stringify(cars)]
-                ]
-            })
+            body: JSON.stringify(cars)
         });
+        if (!res.ok) {
+            const txt = await res.text();
+            throw new Error(`Upstash set failed: ${res.status} ${txt}`);
+        }
     }
 
     try {
@@ -40,17 +40,13 @@ export default async function handler(req, res) {
             const data = await response.json();
 
             if (data.result) {
-                let parsed = [];
                 try {
-                    parsed = JSON.parse(data.result);
-                    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.value) {
-                        const inner = typeof parsed.value === 'string' ? JSON.parse(parsed.value) : parsed.value;
-                        parsed = Array.isArray(inner) ? inner : [];
-                    }
+                    const parsed = JSON.parse(data.result);
+                    return res.status(200).json(Array.isArray(parsed) ? parsed : []);
                 } catch (err) {
-                    parsed = [];
+                    console.error('Parse error cars_list:', err);
+                    return res.status(200).json([]);
                 }
-                return res.status(200).json(Array.isArray(parsed) ? parsed : []);
             }
             return res.status(200).json([]);
         }
