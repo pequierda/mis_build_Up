@@ -764,6 +764,16 @@ async function editBooking(bookingId) {
         
         document.getElementById('editTotalPrice').value = booking.totalPrice || '';
         document.getElementById('editBookingStatus').value = booking.status || 'pending';
+        const deleteBtn = document.getElementById('deleteBookingBtn');
+        if (deleteBtn) {
+            const isCompleted = (booking.status || '').toLowerCase() === 'completed';
+            deleteBtn.disabled = isCompleted;
+            if (isCompleted) {
+                deleteBtn.classList.add('opacity-60', 'cursor-not-allowed');
+            } else {
+                deleteBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+            }
+        }
         
         document.getElementById('editBookingModal').classList.remove('hidden');
     } catch (error) {
@@ -850,6 +860,11 @@ async function handleBookingFormSubmit(e) {
 
 async function deleteBooking() {
     const bookingId = document.getElementById('editBookingId').value;
+    const status = (document.getElementById('editBookingStatus')?.value || '').toLowerCase();
+    if (status === 'completed') {
+        showNotification('Completed bookings cannot be deleted', 'error');
+        return;
+    }
     
     if (!confirm('Are you sure you want to delete this booking?')) return;
     
