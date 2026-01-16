@@ -23,12 +23,21 @@ export default async function handler(req, res) {
                 headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
             });
             const data = await response.json();
-            
+
             if (data.result) {
-                return res.status(200).json(JSON.parse(data.result));
-            } else {
-                return res.status(200).json([]);
+                let parsed = [];
+                try {
+                    parsed = JSON.parse(data.result);
+                    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.value) {
+                        const inner = typeof parsed.value === 'string' ? JSON.parse(parsed.value) : parsed.value;
+                        parsed = Array.isArray(inner) ? inner : [];
+                    }
+                } catch (err) {
+                    parsed = [];
+                }
+                return res.status(200).json(Array.isArray(parsed) ? parsed : []);
             }
+            return res.status(200).json([]);
         }
 
         const authHeader = req.headers.authorization;
@@ -78,13 +87,11 @@ export default async function handler(req, res) {
                 cars.push(car);
             }
 
-            await fetch(`${UPSTASH_URL}/set/cars_list`, {
+            await fetch(`${UPSTASH_URL}/set/cars_list/${encodeURIComponent(JSON.stringify(cars))}`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${UPSTASH_TOKEN}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ value: JSON.stringify(cars) })
+                    'Authorization': `Bearer ${UPSTASH_TOKEN}`
+                }
             });
 
             return res.status(200).json({
@@ -112,13 +119,11 @@ export default async function handler(req, res) {
 
             cars = cars.filter(c => c.id !== id);
 
-            await fetch(`${UPSTASH_URL}/set/cars_list`, {
+            await fetch(`${UPSTASH_URL}/set/cars_list/${encodeURIComponent(JSON.stringify(cars))}`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${UPSTASH_TOKEN}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ value: JSON.stringify(cars) })
+                    'Authorization': `Bearer ${UPSTASH_TOKEN}`
+                }
             });
 
             return res.status(200).json({
