@@ -8,7 +8,7 @@ function formatDate(dateStr) {
 let allCarsData = [];
 let allBookingsData = [];
 let pendingBookingData = null;
-let transmissionFilterValue = 'all';
+let transmissionFilterValue = 'automatic';
 
 async function loadServices() {
     const servicesGrid = document.getElementById('servicesGrid');
@@ -44,21 +44,12 @@ function setupTransmissionFilter() {
     const toggle = document.getElementById('transmissionToggle');
     const toggleText = document.getElementById('transmissionToggleText');
     const label = document.getElementById('transmissionLabel');
-    const allBtn = document.getElementById('transmissionAllBtn');
     const track = document.getElementById('transmissionTrack');
     const knob = document.getElementById('transmissionKnob');
-    if (!toggle || !toggleText || !label || !allBtn) return;
+    if (!toggle || !toggleText || !label) return;
 
     const updateUI = () => {
-        if (transmissionFilterValue === 'all') {
-            label.textContent = 'All';
-            toggle.checked = false;
-            toggleText.textContent = 'Manual';
-            if (track && knob) {
-                track.className = 'w-16 h-9 rounded-full flex items-center px-1 transition duration-300 bg-gray-200';
-                knob.style.transform = 'translateX(0)';
-            }
-        } else if (transmissionFilterValue === 'automatic') {
+        if (transmissionFilterValue === 'automatic') {
             label.textContent = 'Automatic';
             toggle.checked = true;
             toggleText.textContent = 'Automatic';
@@ -66,7 +57,7 @@ function setupTransmissionFilter() {
                 track.className = 'w-16 h-9 rounded-full flex items-center px-1 transition duration-300 bg-gradient-to-r from-emerald-300 to-blue-500';
                 knob.style.transform = 'translateX(28px)';
             }
-        } else {
+        } else { // manual
             label.textContent = 'Manual';
             toggle.checked = false;
             toggleText.textContent = 'Manual';
@@ -83,12 +74,6 @@ function setupTransmissionFilter() {
         renderCars();
     });
 
-    allBtn.addEventListener('click', () => {
-        transmissionFilterValue = 'all';
-        updateUI();
-        renderCars();
-    });
-
     updateUI();
 }
 
@@ -97,7 +82,6 @@ async function renderCars() {
     if (!servicesGrid) return;
 
     const filteredCars = allCarsData.filter(car => {
-        if (transmissionFilterValue === 'all') return true;
         const t = (car.transmission || '').toLowerCase();
         return t === transmissionFilterValue;
     });
