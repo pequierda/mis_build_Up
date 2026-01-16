@@ -45,6 +45,8 @@ function setupTransmissionFilter() {
     const toggleText = document.getElementById('transmissionToggleText');
     const label = document.getElementById('transmissionLabel');
     const allBtn = document.getElementById('transmissionAllBtn');
+    const track = document.getElementById('transmissionTrack');
+    const knob = document.getElementById('transmissionKnob');
     if (!toggle || !toggleText || !label || !allBtn) return;
 
     const updateUI = () => {
@@ -52,14 +54,26 @@ function setupTransmissionFilter() {
             label.textContent = 'All';
             toggle.checked = false;
             toggleText.textContent = 'Manual';
+            if (track && knob) {
+                track.className = 'w-16 h-9 rounded-full flex items-center px-1 transition duration-300 bg-gray-200';
+                knob.style.transform = 'translateX(0)';
+            }
         } else if (transmissionFilterValue === 'automatic') {
             label.textContent = 'Automatic';
             toggle.checked = true;
             toggleText.textContent = 'Automatic';
+            if (track && knob) {
+                track.className = 'w-16 h-9 rounded-full flex items-center px-1 transition duration-300 bg-gradient-to-r from-emerald-300 to-blue-500';
+                knob.style.transform = 'translateX(28px)';
+            }
         } else {
             label.textContent = 'Manual';
             toggle.checked = false;
             toggleText.textContent = 'Manual';
+            if (track && knob) {
+                track.className = 'w-16 h-9 rounded-full flex items-center px-1 transition duration-300 bg-gradient-to-r from-orange-300 to-amber-500';
+                knob.style.transform = 'translateX(0)';
+            }
         }
     };
 
