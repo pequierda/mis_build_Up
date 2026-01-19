@@ -20,6 +20,7 @@
                 </div>
                 <div class="flex items-center gap-2 sm:gap-4">
                     <a href="../index.html" target="_blank" class="text-gray-700 hover:text-purple-600 font-medium transition text-sm sm:text-base hidden sm:block">View Site</a>
+                    <button id="changePasswordBtn" class="bg-amber-500 hover:bg-amber-600 text-white px-3 sm:px-5 py-2 rounded-lg font-medium transition text-sm sm:text-base">Change Password</button>
                     <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-3 sm:px-6 py-2 rounded-lg font-medium transition text-sm sm:text-base relative z-10 cursor-pointer" onclick="logout()">Logout</button>
                 </div>
             </div>
@@ -285,6 +286,44 @@
         </div>
     </div>
 
+
+    <!-- Change Password Modal -->
+    <div id="passwordModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-amber-100">
+            <div class="flex items-center justify-between px-6 py-4 border-b">
+                <h3 class="text-lg font-bold text-gray-900">Change Admin Password</h3>
+                <button id="closePasswordModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="passwordForm" class="px-6 py-5 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                    <input type="password" id="currentPassword" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                    <input type="password" id="newPassword" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" id="passwordSaveBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2">
+                        <svg id="passwordSpinner" class="w-5 h-5 animate-spin hidden" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v3a5 5 0 00-5 5H4z"></path>
+                        </svg>
+                        <span id="passwordSaveText">Update Password</span>
+                    </button>
+                    <button type="button" id="passwordCancelBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
     <script src="js/dashboard.js"></script>

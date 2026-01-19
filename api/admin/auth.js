@@ -62,6 +62,34 @@ export default async function handler(req, res) {
                 success: true,
                 logged_in: true
             });
+        } else if (action === 'change') {
+            const { currentPassword, newPassword } = req.body || {};
+            if (!currentPassword || !newPassword) {
+                return res.status(400).json({ success: false, message: 'Current and new password are required' });
+            }
+
+            // Get current stored password
+            const passRes = await fetch(`${UPSTASH_URL}/get/admin:password`, {
+                headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
+            });
+            const passData = await passRes.json();
+            const storedPassword = passData.result || 'admin123';
+
+            if (currentPassword !== storedPassword) {
+                return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+            }
+
+            const setRes = await fetch(`${UPSTASH_URL}/set/admin:password/${encodeURIComponent(newPassword)}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${UPSTASH_TOKEN}` }
+            });
+
+            if (!setRes.ok) {
+                const txt = await setRes.text();
+                return res.status(500).json({ success: false, message: `Failed to update password: ${txt}` });
+            }
+
+            return res.status(200).json({ success: true, message: 'Password updated successfully' });
         } else {
             return res.status(400).json({
                 success: false,

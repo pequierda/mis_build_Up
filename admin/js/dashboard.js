@@ -359,6 +359,79 @@ function initializeEventListeners() {
             logout();
         };
     }
+
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const passwordModal = document.getElementById('passwordModal');
+    const closePasswordModal = document.getElementById('closePasswordModal');
+    const passwordCancelBtn = document.getElementById('passwordCancelBtn');
+    const passwordForm = document.getElementById('passwordForm');
+    const passwordSpinner = document.getElementById('passwordSpinner');
+    const passwordSaveText = document.getElementById('passwordSaveText');
+    const passwordSaveBtn = document.getElementById('passwordSaveBtn');
+
+    const openPasswordModal = () => {
+        if (passwordModal) passwordModal.classList.remove('hidden');
+    };
+    const closePasswordModalFn = () => {
+        if (passwordModal) passwordModal.classList.add('hidden');
+        if (passwordForm) passwordForm.reset();
+    };
+
+    if (changePasswordBtn) changePasswordBtn.addEventListener('click', openPasswordModal);
+    if (closePasswordModal) closePasswordModal.addEventListener('click', closePasswordModalFn);
+    if (passwordCancelBtn) passwordCancelBtn.addEventListener('click', closePasswordModalFn);
+
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const currentPassword = document.getElementById('currentPassword').value.trim();
+            const newPassword = document.getElementById('newPassword').value.trim();
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showNotification('All fields are required', 'error');
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                showNotification('New passwords do not match', 'error');
+                return;
+            }
+
+            if (passwordSaveBtn) {
+                passwordSaveBtn.disabled = true;
+                passwordSaveBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            }
+            if (passwordSpinner) passwordSpinner.classList.remove('hidden');
+            if (passwordSaveText) passwordSaveText.textContent = 'Updating...';
+
+            try {
+                const res = await fetch('../api/admin/auth?action=change', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message || `HTTP error! status: ${res.status}`);
+                }
+                showNotification('Password updated', 'success');
+                closePasswordModalFn();
+            } catch (err) {
+                console.error('Password change failed:', err);
+                showNotification(err.message || 'Failed to update password', 'error');
+            } finally {
+                if (passwordSpinner) passwordSpinner.classList.add('hidden');
+                if (passwordSaveText) passwordSaveText.textContent = 'Update Password';
+                if (passwordSaveBtn) {
+                    passwordSaveBtn.disabled = false;
+                    passwordSaveBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                }
+            }
+        });
+    }
     
     // Activity tracking for auto-logout
     resetInactivityTimer();
